@@ -1,0 +1,16 @@
+[package]
+name = "nom-sparql"
+version = "0.1.0"
+authors = ["Matthias Seitz <matthias.seitz@tum.de>"]
+edition = "2018"
+documentation = "https://docs.rs/nom-sparql"
+repository = "https://github.com/mattsse/nom-sparql.git"
+
+description = "A SPARQL parser written using nom."
+license = "MIT OR APACHE 2.0"
+
+
+[dependencies]
+serde_derive = "1.0"
+serde = "1.0"
+nom = "^4.2.3"
