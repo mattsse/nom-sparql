@@ -126,10 +126,6 @@ pub enum IriRef {
     PrefixedName(String),
 }
 
-fn iri_ref(_i: &[u8]) -> IResult<&[u8], IriRef> {
-    unimplemented!()
-}
-
 #[derive(Debug, Clone)]
 pub enum PrefixedName {
     PnameLN {

@@ -1,8 +1,9 @@
-use crate::query::SparqlQuery;
+use crate::expression::IriRef;
+use crate::query::{SparqlQuery, Var};
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_while1};
 use nom::character::complete::{char, digit1};
-use nom::combinator::{cut, map};
+use nom::combinator::{cut, map, opt};
 use nom::multi::many0;
 use nom::sequence::{pair, preceded, terminated};
 use nom::{
@@ -53,6 +54,42 @@ fn var_name(i: &str) -> IResult<&str, String> {
         pair(alt((pn_chars_u, digit1)), many0(alt((pn_chars_u, digit1)))),
         |(s1, s2)| format!("{}{}", s1, s2.concat()),
     )(i)
+}
+
+fn iri_ref(i: &str) -> IResult<&str, IriRef> {
+    unimplemented!()
+}
+
+fn var(i: &str) -> IResult<&str, Var> {
+    alt((
+        map(preceded(char('?'), preceded(sp, var_name)), Var::Var1),
+        map(preceded(char('$'), preceded(sp, var_name)), Var::Var2),
+    ))(i)
+}
+
+fn pn_tail(i: &str) -> IResult<&str, Option<(Vec<&str>, &str)>> {
+    opt(pair(many0(alt((pn_chars, tag(".")))), pn_chars))(i)
+}
+
+fn pn_any<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, String>
+where
+    F: Fn(&'a str) -> IResult<&'a str, &'a str>,
+{
+    map(pair(pat, pn_tail), |(s1, s2)| {
+        if let Some((chain, last)) = s2 {
+            format!("{}{}{}", s1, chain.concat(), last)
+        } else {
+            s1.to_string()
+        }
+    })
+}
+
+fn pn_local(i: &str) -> IResult<&str, String> {
+    pn_any(alt((pn_chars_u, digit1)))(i)
+}
+
+fn pn_prefix(i: &str) -> IResult<&str, String> {
+    pn_any(pn_chars_base)(i)
 }
 
 fn is_unicode(data: char) -> bool {
