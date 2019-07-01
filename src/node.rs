@@ -95,7 +95,7 @@ pub struct GraphPattern {
 
 #[derive(Debug, Clone)]
 pub enum GraphPatternOrFilter {
-    GraphPattern(GraphPatternNotTriples),
+    GraphPattern(Box<GraphPatternNotTriples>),
     Filter(Constraint),
 }
 

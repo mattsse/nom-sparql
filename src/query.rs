@@ -11,7 +11,7 @@ pub enum SparqlQuery {
 }
 
 impl fmt::Display for SparqlQuery {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
         unimplemented!()
     }
 }
@@ -86,8 +86,8 @@ pub struct OrderClause {
 
 #[derive(Debug, Clone)]
 pub enum OrderCondition {
-    Order(OrderExpression),
-    Constraint(Constraint),
+    Order(Box<OrderExpression>),
+    Constraint(Box<Constraint>),
     Var(Var),
 }
 

@@ -15,7 +15,7 @@ use nom::{
     AsChar, Err, IResult,
 };
 
-fn sparql_query(i: &[u8]) -> IResult<&[u8], SparqlQuery> {
+fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
     unimplemented!()
 }
 
@@ -55,8 +55,8 @@ fn var_name(i: &str) -> IResult<&str, String> {
     )(i)
 }
 
-fn is_unicode(data: &char) -> bool {
-    match *data {
+fn is_unicode(data: char) -> bool {
+    match data {
         '\u{00C0}'..='\u{00D6}' => true,
         '\u{00D8}'..='\u{00F6}' => true,
         '\u{00F8}'..='\u{02FF}' => true,
@@ -73,7 +73,7 @@ fn is_unicode(data: &char) -> bool {
 }
 
 fn pn_chars_base(i: &str) -> IResult<&str, &str> {
-    take_while1(|c| is_alphabetic(c as u8) || is_unicode(&c))(i)
+    take_while1(|c| is_alphabetic(c as u8) || is_unicode(c))(i)
 }
 fn pn_chars_u(i: &str) -> IResult<&str, &str> {
     alt((pn_chars_base, tag("_")))(i)

@@ -1,5 +1,5 @@
 use crate::query::Var;
-use nom::branch::alt;
+
 use nom::IResult;
 
 #[derive(Debug, Clone)]
@@ -126,7 +126,7 @@ pub enum IriRef {
     PrefixedName(String),
 }
 
-fn iri_ref(i: &[u8]) -> IResult<&[u8], IriRef> {
+fn iri_ref(_i: &[u8]) -> IResult<&[u8], IriRef> {
     unimplemented!()
 }
 
@@ -157,7 +157,7 @@ pub struct OrderExpression {
 pub enum ArgList {
     Nil,
     Expression {
-        first: Expression,
+        first: Box<Expression>,
         further: Vec<Expression>,
     },
 }
@@ -170,7 +170,7 @@ pub struct FunctionCall {
 
 #[derive(Debug, Clone)]
 pub enum Constraint {
-    Bracketted(Expression),
+    Bracketted(Box<Expression>),
     BuiltInCall(BuiltInCall),
-    FunctionCall(FunctionCall),
+    FunctionCall(Box<FunctionCall>),
 }
