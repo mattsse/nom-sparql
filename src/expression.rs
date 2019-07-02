@@ -1,7 +1,5 @@
 use crate::query::Var;
 
-use nom::IResult;
-
 #[derive(Debug, Clone)]
 pub struct Expression(ConditionalOrExpression);
 
@@ -120,21 +118,19 @@ pub enum BuiltInCall {
 #[derive(Debug, Clone)]
 pub struct RegexExpression {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum IriRef {
     IriRef(String),
-    PrefixedName(String),
+    PrefixedName(PrefixedName),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PrefixedName {
     PnameLN {
         pn_prefix: Option<String>,
         pn_local: String,
     },
-    PnameNS {
-        pn_prefix: Option<String>,
-    },
+    PnameNS(Option<String>),
 }
 
 #[derive(Debug, Clone)]

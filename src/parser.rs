@@ -1,10 +1,10 @@
-use crate::expression::IriRef;
+use crate::expression::{IriRef, PrefixedName};
 use crate::query::{SparqlQuery, Var};
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_while1};
-use nom::character::complete::{char, digit1};
+use nom::bytes::complete::{escaped, is_not, tag, take_while1};
+use nom::character::complete::{char, digit1, one_of};
 use nom::combinator::{cut, map, opt};
-use nom::multi::many0;
+use nom::multi::{many0, many_till};
 use nom::sequence::{pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -44,6 +44,11 @@ fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
     take_while(move |c| chars.contains(c))(i)
 }
 
+fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
+    // https://github.com/thejpster/monotronian/blob/master/src/lexer/mod.rs#L696
+    escaped(alphanumeric, '\\', one_of("\"n\\"))(i)
+}
+
 fn is_echar(i: char) -> bool {
     let echars = "\\\tb\n\rf\"'";
     echars.contains(i)
@@ -56,8 +61,31 @@ fn var_name(i: &str) -> IResult<&str, String> {
     )(i)
 }
 
+fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
+    alt((
+        map(pname_ln, |(pn_prefix, pn_local)| PrefixedName::PnameLN {
+            pn_prefix,
+            pn_local,
+        }),
+        map(pname_ns, PrefixedName::PnameNS),
+    ))(i)
+}
+
+fn iri_ref_lex(i: &str) -> IResult<&str, String> {
+    map(
+        preceded(
+            char('<'),
+            cut(many_till(alt((is_not("<>\"{}|^\\`"), pn_chars)), char('>'))),
+        ),
+        |(c, _)| c.concat(),
+    )(i)
+}
+
 fn iri_ref(i: &str) -> IResult<&str, IriRef> {
-    unimplemented!()
+    alt((
+        map(iri_ref_lex, IriRef::IriRef),
+        map(prefixed_name, IriRef::PrefixedName),
+    ))(i)
 }
 
 fn var(i: &str) -> IResult<&str, Var> {
@@ -90,6 +118,14 @@ fn pn_local(i: &str) -> IResult<&str, String> {
 
 fn pn_prefix(i: &str) -> IResult<&str, String> {
     pn_any(pn_chars_base)(i)
+}
+
+fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
+    terminated(opt(pn_prefix), preceded(sp, char(':')))(i)
+}
+
+fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
+    pair(pname_ns, preceded(sp, pn_local))(i)
 }
 
 fn is_unicode(data: char) -> bool {
@@ -147,5 +183,16 @@ mod tests {
         assert_eq!(pn_chars_base("\u{00D8} "), Ok((" ", "\u{00D8}")));
         assert_eq!(pn_chars_base("\u{FDF0} "), Ok((" ", "\u{FDF0}")));
         assert_eq!(pn_chars_base("\u{F900} "), Ok((" ", "\u{F900}")));
+    }
+
+    #[test]
+    fn is_iri_ref() {
+        assert_eq!(
+            iri_ref("<http://education.data.gov.uk/def/school/>"),
+            Ok((
+                "",
+                IriRef::IriRef("http://education.data.gov.uk/def/school/".to_string())
+            ))
+        );
     }
 }
