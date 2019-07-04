@@ -217,7 +217,7 @@ fn is_illegal_char_lit_1(c: char) -> bool {
 
 #[inline]
 fn is_illegal_char_lit_2(c: char) -> bool {
-    if is_illegal_char_lit_1(c) == false {
+    if !is_illegal_char_lit_1(c) {
         c == '\u{0022}'
     } else {
         true
