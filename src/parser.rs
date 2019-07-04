@@ -1,11 +1,11 @@
 use crate::expression::{IriRef, PrefixedName};
 use crate::query::{SparqlQuery, Var};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, is_not, tag, take_while1};
-use nom::character::complete::{char, digit1, one_of};
-use nom::combinator::{cut, map, opt};
+use nom::bytes::complete::{escaped, is_a, is_not, tag, take_while1};
+use nom::character::complete::{anychar, char, digit1, none_of, one_of};
+use nom::combinator::{complete, cond, cut, map, not, opt, peek};
 use nom::multi::{many0, many_till};
-use nom::sequence::{pair, preceded, terminated};
+use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
     character::{
@@ -15,6 +15,7 @@ use nom::{
     error::{ErrorKind, ParseError},
     AsChar, Err, IResult,
 };
+use serde::export::fmt::Debug;
 
 fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
     unimplemented!()
@@ -44,14 +45,47 @@ fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
     take_while(move |c| chars.contains(c))(i)
 }
 
-fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
-    // https://github.com/thejpster/monotronian/blob/master/src/lexer/mod.rs#L696
-    escaped(alphanumeric, '\\', one_of("\"n\\"))(i)
+fn string_content(i: &str) -> IResult<&str, &str> {
+    escaped(none_of("'\"\\"), '\\', one_of(r#""tbnrf\'"#))(i)
 }
 
-fn is_echar(i: char) -> bool {
-    let echars = "\\\tb\n\rf\"'";
-    echars.contains(i)
+pub fn delimited2<I: Debug, O1, O2: Debug, O3, E: ParseError<I>, F, G, H>(
+    first: F,
+    sep: G,
+    second: H,
+) -> impl Fn(I) -> IResult<I, O2, E>
+where
+    F: Fn(I) -> IResult<I, O1, E>,
+    G: Fn(I) -> IResult<I, O2, E>,
+    H: Fn(I) -> IResult<I, O3, E>,
+{
+    move |input: I| {
+        let (input, _) = first(input)?;
+        println!("{:?}", input);
+        let (input, o2) = sep(input)?;
+        println!("input {:?}  o2: {:?}", input, o2);
+        second(input).map(|(i, _)| (i, o2))
+    }
+}
+
+fn string_literal(i: &str) -> IResult<&str, &str> {
+    alt((
+        delimited2(
+            tag("'"),
+            escaped(none_of("'\\"), '\\', one_of(r#""tbnrf\'"#)),
+            tag("'"),
+        ),
+        delimited(
+            tag("\""),
+            escaped(none_of("\"\\"), '\\', one_of(r#""tbnrf\'"#)),
+            tag("\""),
+        ),
+    ))(i)
+}
+
+#[inline]
+fn echar(i: &str) -> IResult<&str, &str> {
+    escaped(none_of("\\"), '\\', one_of(r#""tbnrf'"#))(i)
 }
 
 fn var_name(i: &str) -> IResult<&str, String> {
@@ -128,8 +162,8 @@ fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
     pair(pname_ns, preceded(sp, pn_local))(i)
 }
 
-fn is_unicode(data: char) -> bool {
-    match data {
+fn is_unicode(c: char) -> bool {
+    match c {
         '\u{00C0}'..='\u{00D6}' => true,
         '\u{00D8}'..='\u{00F6}' => true,
         '\u{00F8}'..='\u{02FF}' => true,
@@ -142,6 +176,23 @@ fn is_unicode(data: char) -> bool {
         '\u{F900}'..='\u{FDCF}' => true,
         '\u{FDF0}'..='\u{FFFD}' => true,
         _ => false,
+    }
+}
+
+#[inline]
+fn is_illegal_char_lit_1(c: char) -> bool {
+    match c {
+        '\u{0027}' | '\u{005C}' | '\u{000A}' | '\u{000D}' => true,
+        _ => false,
+    }
+}
+
+#[inline]
+fn is_illegal_char_lit_2(c: char) -> bool {
+    if is_illegal_char_lit_1(c) == false {
+        c == '\u{0022}'
+    } else {
+        true
     }
 }
 
@@ -195,4 +246,21 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn is_string_literal() {
+        //        assert_eq!(
+        //            string_literal(r#""some string lit""#),
+        //            Ok(("", r#"some string lit"#))
+        //        );
+        //        assert_eq!(
+        //            string_literal("'some string lit'"),
+        //            Ok(("", "some string lit"))
+        //        );
+        assert_eq!(
+            string_literal("'some \tstring\n\r\"\'  lit'"),
+            Ok(("", "some \tstring\n\r\"\'  lit"))
+        );
+    }
 }
+// https://www.w3.org/TR/rdf-sparql-query/#QSynLiterals
