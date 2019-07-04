@@ -1,3 +1,4 @@
+use crate::node::RdfLiteral;
 use crate::query::Var;
 
 #[derive(Debug, Clone)]
@@ -78,7 +79,7 @@ pub enum PrimaryExpression {
     BrackettedExpression(Box<Expression>),
     BuiltInCall(BuiltInCall),
     IriRefOrFunction,
-    RdfLiteral,
+    RdfLiteral(RdfLiteral),
     NumericLiteral,
     BooleanLiteral,
     Var,
@@ -122,6 +123,16 @@ pub struct RegexExpression {}
 pub enum IriRef {
     IriRef(String),
     PrefixedName(PrefixedName),
+}
+
+impl IriRef {
+    pub fn iri_ref<T: ToString>(iri_ref: T) -> Self {
+        IriRef::IriRef(iri_ref.to_string())
+    }
+
+    pub fn prefixed_name<T: Into<PrefixedName>>(prefixed_name: T) -> Self {
+        IriRef::PrefixedName(prefixed_name.into())
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

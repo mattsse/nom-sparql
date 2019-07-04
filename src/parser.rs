@@ -1,4 +1,5 @@
 use crate::expression::{IriRef, PrefixedName};
+use crate::node::{RdfLiteral, RdfLiteralDescriptor};
 use crate::query::{SparqlQuery, Var};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, take_while1, take_while_m_n};
@@ -67,6 +68,22 @@ fn string_literal(i: &str) -> IResult<&str, &str> {
             tag("\""),
         ),
     ))(i)
+}
+
+fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
+    map(
+        pair(
+            map(string_literal, String::from),
+            opt(alt((
+                map(language_tag, RdfLiteralDescriptor::LangTag),
+                map(preceded(tag("^^"), iri_ref), RdfLiteralDescriptor::IriRef),
+            ))),
+        ),
+        |(literal, descriptor)| RdfLiteral {
+            literal,
+            descriptor,
+        },
+    )(i)
 }
 
 fn language_tag(i: &str) -> IResult<&str, String> {
@@ -322,6 +339,44 @@ mod tests {
         assert_eq!(
             language_tag("@1lang"),
             Err(Err::Error(("1lang", ErrorKind::Alpha)))
+        );
+    }
+
+    #[test]
+    fn is_rdf_literal() {
+        assert_eq!(rdf_literal("'chat'"), Ok(("", RdfLiteral::literal("chat"))));
+
+        assert_eq!(
+            rdf_literal("'chat'@fr"),
+            Ok((
+                "",
+                RdfLiteral::new("chat", RdfLiteralDescriptor::LangTag("fr".to_string()))
+            ))
+        );
+        assert_eq!(
+            rdf_literal("'xyz'^^<http://example.org/ns/userDatatype>"),
+            Ok((
+                "",
+                RdfLiteral::new(
+                    "xyz",
+                    RdfLiteralDescriptor::IriRef(IriRef::IriRef(
+                        "http://example.org/ns/userDatatype".to_string()
+                    ))
+                )
+            ))
+        );
+        assert_eq!(
+            rdf_literal(r#""abc"^^appNS:appDataType"#),
+            Ok((
+                "",
+                RdfLiteral::new(
+                    "abc",
+                    RdfLiteralDescriptor::IriRef(IriRef::PrefixedName(PrefixedName::PnameLN {
+                        pn_prefix: Some("appNS".to_string()),
+                        pn_local: "appDataType".to_string()
+                    }))
+                )
+            ))
         );
     }
 }

@@ -1,4 +1,4 @@
-use crate::expression::Constraint;
+use crate::expression::{Constraint, IriRef};
 use crate::query::{Var, VarOrIriRef};
 use crate::triple::Verb;
 
@@ -36,7 +36,7 @@ pub struct Collection(Vec<GraphNode>);
 #[derive(Debug, Clone)]
 pub enum GraphTerm {
     IriRef(VarOrIriRef),
-    RdfLiteral,
+    RdfLiteral(RdfLiteral),
     NumericLiteral,
     BooleanLiteral(bool),
     BlankNode(BlankNode),
@@ -44,9 +44,38 @@ pub enum GraphTerm {
     Nil,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct RdfLiteral {
+    pub literal: String,
+    pub descriptor: Option<RdfLiteralDescriptor>,
+}
+
+impl RdfLiteral {
+    /// creates a complete [`RdfLiteral`]
+    pub fn new<T: ToString>(literal: T, descriptor: RdfLiteralDescriptor) -> Self {
+        RdfLiteral {
+            literal: literal.to_string(),
+            descriptor: Some(descriptor),
+        }
+    }
+
+    /// creates a new [`RdfLiteral`] with a `literal` only
+    pub fn literal<T: ToString>(literal: T) -> Self {
+        RdfLiteral {
+            literal: literal.to_string(),
+            descriptor: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum RdfLiteralDescriptor {
+    LangTag(String),
+    IriRef(IriRef),
+}
+
 #[derive(Debug, Clone)]
 pub enum BlankNode {
-    /// empty brackets
     Anon,
     Label(String),
 }
