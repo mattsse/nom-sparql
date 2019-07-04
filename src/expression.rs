@@ -1,5 +1,7 @@
 use crate::node::RdfLiteral;
 use crate::query::Var;
+use std::num::ParseIntError;
+use std::{fmt, str::FromStr, string::ParseError};
 
 #[derive(Debug, Clone)]
 pub struct Expression(ConditionalOrExpression);
@@ -176,4 +178,43 @@ pub enum Constraint {
     Bracketted(Box<Expression>),
     BuiltInCall(BuiltInCall),
     FunctionCall(Box<FunctionCall>),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Copy)]
+pub enum Sign {
+    POS,
+    NEG,
+}
+
+impl Default for Sign {
+    fn default() -> Self {
+        Sign::POS
+    }
+}
+
+impl AsRef<str> for Sign {
+    fn as_ref(&self) -> &str {
+        match self {
+            Sign::POS => "+",
+            Sign::NEG => "-",
+        }
+    }
+}
+
+impl FromStr for Sign {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "+" | "" => Ok(Sign::POS),
+            "-" => Ok(Sign::NEG),
+            _ => Err(()),
+        }
+    }
+}
+
+impl fmt::Display for Sign {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.as_ref())
+    }
 }
