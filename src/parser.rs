@@ -1,21 +1,25 @@
 use crate::expression::{IriRef, PrefixedName};
 use crate::query::{SparqlQuery, Var};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, is_a, is_not, tag, take_while1};
+use nom::bytes::complete::{escaped, tag, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
+
 use nom::combinator::{complete, cond, cut, map, not, opt, peek};
-use nom::multi::{many0, many_till};
+
+use nom::multi::{fold_many0, many0};
 use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
     character::{
-        complete::{alpha1 as alpha, alphanumeric1 as alphanumeric},
+        complete::{alpha1, alphanumeric1},
         is_alphabetic,
     },
+    dbg_dmp,
     error::{ErrorKind, ParseError},
     AsChar, Err, IResult,
 };
-use serde::export::fmt::Debug;
+
+// https://www.w3.org/TR/2004/REC-xml11-20040204/#sec-notation
 
 fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
     unimplemented!()
@@ -49,28 +53,10 @@ fn string_content(i: &str) -> IResult<&str, &str> {
     escaped(none_of("'\"\\"), '\\', one_of(r#""tbnrf\'"#))(i)
 }
 
-pub fn delimited2<I: Debug, O1, O2: Debug, O3, E: ParseError<I>, F, G, H>(
-    first: F,
-    sep: G,
-    second: H,
-) -> impl Fn(I) -> IResult<I, O2, E>
-where
-    F: Fn(I) -> IResult<I, O1, E>,
-    G: Fn(I) -> IResult<I, O2, E>,
-    H: Fn(I) -> IResult<I, O3, E>,
-{
-    move |input: I| {
-        let (input, _) = first(input)?;
-        println!("{:?}", input);
-        let (input, o2) = sep(input)?;
-        println!("input {:?}  o2: {:?}", input, o2);
-        second(input).map(|(i, _)| (i, o2))
-    }
-}
-
+/// https://www.w3.org/TR/rdf-sparql-query/#QSynLiterals
 fn string_literal(i: &str) -> IResult<&str, &str> {
     alt((
-        delimited2(
+        delimited(
             tag("'"),
             escaped(none_of("'\\"), '\\', one_of(r#""tbnrf\'"#)),
             tag("'"),
@@ -83,15 +69,40 @@ fn string_literal(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
+fn language_tag(i: &str) -> IResult<&str, String> {
+    map(
+        preceded(
+            char('@'),
+            pair(
+                alpha1,
+                fold_many0(
+                    pair(tag("-"), alphanumeric1),
+                    String::new(),
+                    |mut s, item| {
+                        s += item.0;
+                        s += item.1;
+                        s
+                    },
+                ),
+            ),
+        ),
+        |(s1, s2)| format!("{}{}", s1, s2),
+    )(i)
+}
+
 #[inline]
 fn echar(i: &str) -> IResult<&str, &str> {
     escaped(none_of("\\"), '\\', one_of(r#""tbnrf'"#))(i)
 }
 
+// TODO consider unicode cases in second
 fn var_name(i: &str) -> IResult<&str, String> {
     map(
-        pair(alt((pn_chars_u, digit1)), many0(alt((pn_chars_u, digit1)))),
-        |(s1, s2)| format!("{}{}", s1, s2.concat()),
+        pair(
+            take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
+            take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
+        ),
+        |(s1, s2)| format!("{}{}", s1, s2),
     )(i)
 }
 
@@ -105,19 +116,24 @@ fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
     ))(i)
 }
 
-fn iri_ref_lex(i: &str) -> IResult<&str, String> {
-    map(
-        preceded(
-            char('<'),
-            cut(many_till(alt((is_not("<>\"{}|^\\`"), pn_chars)), char('>'))),
-        ),
-        |(c, _)| c.concat(),
+fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
+    delimited(
+        tag("<"),
+        take_while(|c| {
+            let chrs = "<>\"{}|^\\`";
+            if chrs.contains(c) {
+                false
+            } else {
+                c as u8 > 0x20
+            }
+        }),
+        tag(">"),
     )(i)
 }
 
 fn iri_ref(i: &str) -> IResult<&str, IriRef> {
     alt((
-        map(iri_ref_lex, IriRef::IriRef),
+        map(iri_ref_lex, |i| IriRef::IriRef(i.to_string())),
         map(prefixed_name, IriRef::PrefixedName),
     ))(i)
 }
@@ -129,29 +145,24 @@ fn var(i: &str) -> IResult<&str, Var> {
     ))(i)
 }
 
-fn pn_tail(i: &str) -> IResult<&str, Option<(Vec<&str>, &str)>> {
-    opt(pair(many0(alt((pn_chars, tag(".")))), pn_chars))(i)
+#[inline]
+fn pn_tail(i: &str) -> IResult<&str, &str> {
+    take_while(|c| is_pn_char(c) || c == '.')(i)
 }
 
 fn pn_any<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, String>
 where
     F: Fn(&'a str) -> IResult<&'a str, &'a str>,
 {
-    map(pair(pat, pn_tail), |(s1, s2)| {
-        if let Some((chain, last)) = s2 {
-            format!("{}{}{}", s1, chain.concat(), last)
-        } else {
-            s1.to_string()
-        }
-    })
+    map(pair(pat, pn_tail), |(s1, tail)| format!("{}{}", s1, tail))
 }
 
 fn pn_local(i: &str) -> IResult<&str, String> {
-    pn_any(alt((pn_chars_u, digit1)))(i)
+    pn_any(take_while_m_n(1, 1, |c| is_pn_char(c) || c.is_dec_digit()))(i)
 }
 
 fn pn_prefix(i: &str) -> IResult<&str, String> {
-    pn_any(pn_chars_base)(i)
+    pn_any(pn_chars_base_one)(i)
 }
 
 fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
@@ -196,15 +207,49 @@ fn is_illegal_char_lit_2(c: char) -> bool {
     }
 }
 
-fn pn_chars_base(i: &str) -> IResult<&str, &str> {
-    take_while1(|c| is_alphabetic(c as u8) || is_unicode(c))(i)
-}
-fn pn_chars_u(i: &str) -> IResult<&str, &str> {
-    alt((pn_chars_base, tag("_")))(i)
+#[inline]
+fn is_pn_chars_base(i: char) -> bool {
+    is_alphabetic(i as u8) || is_unicode(i)
 }
 
-fn pn_chars(i: &str) -> IResult<&str, &str> {
-    alt((pn_chars_u, tag("-"), digit1))(i)
+#[inline]
+fn pn_chars_base_one(i: &str) -> IResult<&str, &str> {
+    take_while_m_n(1, 1, is_pn_chars_base)(i)
+}
+
+#[inline]
+fn pn_chars_base1(i: &str) -> IResult<&str, &str> {
+    take_while1(is_pn_chars_base)(i)
+}
+
+#[inline]
+fn is_pn_chars_u(i: char) -> bool {
+    is_pn_chars_base(i) || i == '_'
+}
+
+#[inline]
+fn pn_chars_u_one(i: &str) -> IResult<&str, &str> {
+    alt((pn_chars_base_one, tag("_")))(i)
+}
+
+#[inline]
+fn pn_chars_u1(i: &str) -> IResult<&str, &str> {
+    take_while1(is_pn_chars_u)(i)
+}
+
+#[inline]
+fn is_pn_char(i: char) -> bool {
+    is_pn_chars_u(i) || i == '-' || i.is_dec_digit()
+}
+
+#[inline]
+fn pn_chars_one(i: &str) -> IResult<&str, &str> {
+    take_while_m_n(1, 1, is_pn_char)(i)
+}
+
+#[inline]
+fn pn_chars1(i: &str) -> IResult<&str, &str> {
+    take_while1(is_pn_char)(i)
 }
 
 fn anon(i: &str) -> IResult<&str, &str> {
@@ -228,12 +273,12 @@ mod tests {
 
     #[test]
     fn is_pn_chars_base() {
-        assert_eq!(pn_chars_base("a "), Ok((" ", "a")));
-        assert_eq!(pn_chars_base("\u{00C0} "), Ok((" ", "\u{00C0}")));
-        assert_eq!(pn_chars_base("\u{03b1} "), Ok((" ", "\u{03b1}")));
-        assert_eq!(pn_chars_base("\u{00D8} "), Ok((" ", "\u{00D8}")));
-        assert_eq!(pn_chars_base("\u{FDF0} "), Ok((" ", "\u{FDF0}")));
-        assert_eq!(pn_chars_base("\u{F900} "), Ok((" ", "\u{F900}")));
+        assert_eq!(pn_chars_base_one("a "), Ok((" ", "a")));
+        assert_eq!(pn_chars_base_one("\u{00C0} "), Ok((" ", "\u{00C0}")));
+        assert_eq!(pn_chars_base_one("\u{03b1} "), Ok((" ", "\u{03b1}")));
+        assert_eq!(pn_chars_base_one("\u{00D8} "), Ok((" ", "\u{00D8}")));
+        assert_eq!(pn_chars_base_one("\u{FDF0} "), Ok((" ", "\u{FDF0}")));
+        assert_eq!(pn_chars_base_one("\u{F900} "), Ok((" ", "\u{F900}")));
     }
 
     #[test]
@@ -249,18 +294,34 @@ mod tests {
 
     #[test]
     fn is_string_literal() {
-        //        assert_eq!(
-        //            string_literal(r#""some string lit""#),
-        //            Ok(("", r#"some string lit"#))
-        //        );
-        //        assert_eq!(
-        //            string_literal("'some string lit'"),
-        //            Ok(("", "some string lit"))
-        //        );
         assert_eq!(
-            string_literal("'some \tstring\n\r\"\'  lit'"),
-            Ok(("", "some \tstring\n\r\"\'  lit"))
+            string_literal(r#""some string lit""#),
+            Ok(("", r#"some string lit"#))
+        );
+        assert_eq!(
+            string_literal("'some string lit'"),
+            Ok(("", "some string lit"))
+        );
+        assert_eq!(
+            string_literal("'some \tstring\n\r\"  lit'"),
+            Ok(("", "some \tstring\n\r\"  lit"))
+        );
+    }
+
+    #[test]
+    fn is_lang_tag() {
+        assert_eq!(language_tag("@en"), Ok(("", "en".to_string())));
+        assert_eq!(
+            language_tag("@some-lang-tag1"),
+            Ok(("", "some-lang-tag1".to_string()))
+        );
+        assert_eq!(
+            language_tag("@some-123lang-tag1"),
+            Ok(("", "some-123lang-tag1".to_string()))
+        );
+        assert_eq!(
+            language_tag("@1lang"),
+            Err(Err::Error(("1lang", ErrorKind::Alpha)))
         );
     }
 }
-// https://www.w3.org/TR/rdf-sparql-query/#QSynLiterals
