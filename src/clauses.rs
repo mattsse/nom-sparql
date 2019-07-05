@@ -11,7 +11,7 @@ use nom::{
 
 use crate::query::LimitOffsetClause;
 use nom::combinator::{map, opt};
-use nom::sequence::{pair, separated_pair};
+use nom::sequence::separated_pair;
 
 #[inline]
 pub(crate) fn int_clause<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, u64>

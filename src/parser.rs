@@ -1,17 +1,17 @@
-use crate::expression::{ArgList, Expression, IriRef, IriRefOrFunction, PrefixedName};
+use crate::expression::{Expression, IriRef, IriRefOrFunction, PrefixedName};
 use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
 };
 use crate::query::{SparqlQuery, Var, VarOrIriRef};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
+use nom::bytes::complete::{escaped, tag, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::triple::Verb;
-use nom::multi::{fold_many0, many0, many1, separated_list, separated_nonempty_list};
+use crate::triple::{graph_node, graph_term};
+use nom::multi::{fold_many0, separated_nonempty_list};
 use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -54,19 +54,19 @@ pub(crate) fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a
 }
 
 #[inline]
-fn sep<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &str>
+pub(crate) fn sep<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &str>
 where
     F: Fn(&'a str) -> IResult<&'a str, &'a str>,
 {
     delimited(sp, pat, sp)
 }
 
-fn string_content(i: &str) -> IResult<&str, &str> {
+pub(crate) fn string_content(i: &str) -> IResult<&str, &str> {
     escaped(none_of("'\"\\"), '\\', one_of(r#""tbnrf\'"#))(i)
 }
 
 /// https://www.w3.org/TR/rdf-sparql-query/#QSynLiterals
-fn string_literal(i: &str) -> IResult<&str, &str> {
+pub(crate) fn string_literal(i: &str) -> IResult<&str, &str> {
     alt((
         delimited(
             tag("'"),
@@ -81,7 +81,7 @@ fn string_literal(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
-fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
+pub(crate) fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
     map(
         pair(
             map(string_literal, String::from),
@@ -97,7 +97,7 @@ fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
     )(i)
 }
 
-fn language_tag(i: &str) -> IResult<&str, String> {
+pub(crate) fn language_tag(i: &str) -> IResult<&str, String> {
     map(
         preceded(
             char('@'),
@@ -119,12 +119,12 @@ fn language_tag(i: &str) -> IResult<&str, String> {
 }
 
 #[inline]
-fn echar(i: &str) -> IResult<&str, &str> {
+pub(crate) fn echar(i: &str) -> IResult<&str, &str> {
     escaped(none_of("\\"), '\\', one_of(r#""tbnrf'"#))(i)
 }
 
 // TODO consider unicode cases in second
-fn var_name(i: &str) -> IResult<&str, String> {
+pub(crate) fn var_name(i: &str) -> IResult<&str, String> {
     map(
         pair(
             take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
@@ -134,7 +134,7 @@ fn var_name(i: &str) -> IResult<&str, String> {
     )(i)
 }
 
-fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
+pub(crate) fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
     alt((
         map(pname_ln, |(pn_prefix, pn_local)| PrefixedName::PnameLN {
             pn_prefix,
@@ -144,7 +144,7 @@ fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
     ))(i)
 }
 
-fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
+pub(crate) fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
     delimited(
         tag("<"),
         take_while(|c| {
@@ -159,92 +159,40 @@ fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
-fn iri_ref(i: &str) -> IResult<&str, IriRef> {
+pub(crate) fn iri_ref(i: &str) -> IResult<&str, IriRef> {
     alt((
         map(iri_ref_lex, |i| IriRef::IriRef(i.to_string())),
         map(prefixed_name, IriRef::PrefixedName),
     ))(i)
 }
 
-fn iri_ref_or_fun(_i: &str) -> IResult<&str, IriRefOrFunction> {
+pub(crate) fn iri_ref_or_fun(_i: &str) -> IResult<&str, IriRefOrFunction> {
     unimplemented!()
 }
 
-fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
+pub(crate) fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
     alt((
         map(var, VarOrIriRef::Var),
         map(iri_ref, VarOrIriRef::IriRef),
     ))(i)
 }
 
-fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
+pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
     alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
 }
 
-fn graph_term(_i: &str) -> IResult<&str, GraphTerm> {
-    unimplemented!()
-}
-fn graph_node(_i: &str) -> IResult<&str, GraphNode> {
-    unimplemented!()
-}
-
-fn collection(i: &str) -> IResult<&str, Collection> {
-    map(
-        delimited(tag("()"), many1(graph_node), tag("()")),
-        Collection,
-    )(i)
-}
-
-fn object_list(i: &str) -> IResult<&str, ObjectList> {
+pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
     map(
         separated_nonempty_list(sep(tag(",")), graph_node),
         ObjectList,
     )(i)
 }
 
-fn property_list_not_empty(i: &str) -> IResult<&str, PropertyList> {
-    map(
-        separated_nonempty_list(
-            sep(take_while1(|c| c == ';')),
-            map(pair(verb, object_list), |(v, l)| VerbList::new(v, l)),
-        ),
-        PropertyList,
-    )(i)
-}
-
-#[inline]
-fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
-    delimited(tag("["), property_list_not_empty, tag("["))(i)
-}
-
-fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
-    alt((
-        map(collection, TriplesNode::Collection),
-        map(blank_node_property_list, TriplesNode::BlankNodePropertyList),
-    ))(i)
-}
-
-#[inline]
-fn property_list(i: &str) -> IResult<&str, Option<PropertyList>> {
-    opt(property_list_not_empty)(i)
-}
-
-fn verb(i: &str) -> IResult<&str, Verb> {
-    alt((
-        map(var_or_iri_ref, Verb::VarOrIriRef),
-        map(tag_no_case("a"), |_| Verb::A),
-    ))(i)
-}
-
-fn arg_list(_i: &str) -> IResult<&str, ArgList> {
+pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
     unimplemented!()
 }
 
-fn expression(_i: &str) -> IResult<&str, Expression> {
-    unimplemented!()
-}
-
-fn var(i: &str) -> IResult<&str, Var> {
+pub(crate) fn var(i: &str) -> IResult<&str, Var> {
     alt((
         map(preceded(char('?'), preceded(sp, var_name)), Var::Var1),
         map(preceded(char('$'), preceded(sp, var_name)), Var::Var2),
@@ -252,34 +200,34 @@ fn var(i: &str) -> IResult<&str, Var> {
 }
 
 #[inline]
-fn pn_tail(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_tail(i: &str) -> IResult<&str, &str> {
     take_while(|c| is_pn_char(c) || c == '.')(i)
 }
 
-fn pn_any<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, String>
+pub(crate) fn pn_any<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, String>
 where
     F: Fn(&'a str) -> IResult<&'a str, &'a str>,
 {
     map(pair(pat, pn_tail), |(s1, tail)| format!("{}{}", s1, tail))
 }
 
-fn pn_local(i: &str) -> IResult<&str, String> {
+pub(crate) fn pn_local(i: &str) -> IResult<&str, String> {
     pn_any(take_while_m_n(1, 1, |c| is_pn_char(c) || c.is_dec_digit()))(i)
 }
 
-fn pn_prefix(i: &str) -> IResult<&str, String> {
+pub(crate) fn pn_prefix(i: &str) -> IResult<&str, String> {
     pn_any(pn_chars_base_one)(i)
 }
 
-fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
+pub(crate) fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
     terminated(opt(pn_prefix), preceded(sp, char(':')))(i)
 }
 
-fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
+pub(crate) fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
     pair(pname_ns, preceded(sp, pn_local))(i)
 }
 
-fn is_unicode(c: char) -> bool {
+pub(crate) fn is_unicode(c: char) -> bool {
     match c {
         '\u{00C0}'..='\u{00D6}' => true,
         '\u{00D8}'..='\u{00F6}' => true,
@@ -297,7 +245,7 @@ fn is_unicode(c: char) -> bool {
 }
 
 #[inline]
-fn is_illegal_char_lit_1(c: char) -> bool {
+pub(crate) fn is_illegal_char_lit_1(c: char) -> bool {
     match c {
         '\u{0027}' | '\u{005C}' | '\u{000A}' | '\u{000D}' => true,
         _ => false,
@@ -305,7 +253,7 @@ fn is_illegal_char_lit_1(c: char) -> bool {
 }
 
 #[inline]
-fn is_illegal_char_lit_2(c: char) -> bool {
+pub(crate) fn is_illegal_char_lit_2(c: char) -> bool {
     if !is_illegal_char_lit_1(c) {
         c == '\u{0022}'
     } else {
@@ -314,55 +262,55 @@ fn is_illegal_char_lit_2(c: char) -> bool {
 }
 
 #[inline]
-fn is_pn_chars_base(i: char) -> bool {
+pub(crate) fn is_pn_chars_base(i: char) -> bool {
     is_alphabetic(i as u8) || is_unicode(i)
 }
 
 #[inline]
-fn pn_chars_base_one(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars_base_one(i: &str) -> IResult<&str, &str> {
     take_while_m_n(1, 1, is_pn_chars_base)(i)
 }
 
 #[inline]
-fn pn_chars_base1(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars_base1(i: &str) -> IResult<&str, &str> {
     take_while1(is_pn_chars_base)(i)
 }
 
 #[inline]
-fn is_pn_chars_u(i: char) -> bool {
+pub(crate) fn is_pn_chars_u(i: char) -> bool {
     is_pn_chars_base(i) || i == '_'
 }
 
 #[inline]
-fn pn_chars_u_one(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars_u_one(i: &str) -> IResult<&str, &str> {
     alt((pn_chars_base_one, tag("_")))(i)
 }
 
 #[inline]
-fn pn_chars_u1(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars_u1(i: &str) -> IResult<&str, &str> {
     take_while1(is_pn_chars_u)(i)
 }
 
 #[inline]
-fn is_pn_char(i: char) -> bool {
+pub(crate) fn is_pn_char(i: char) -> bool {
     is_pn_chars_u(i) || i == '-' || i.is_dec_digit()
 }
 
 #[inline]
-fn pn_chars_one(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars_one(i: &str) -> IResult<&str, &str> {
     take_while_m_n(1, 1, is_pn_char)(i)
 }
 
 #[inline]
-fn pn_chars1(i: &str) -> IResult<&str, &str> {
+pub(crate) fn pn_chars1(i: &str) -> IResult<&str, &str> {
     take_while1(is_pn_char)(i)
 }
 
-fn anon(i: &str) -> IResult<&str, &str> {
+pub(crate) fn anon(i: &str) -> IResult<&str, &str> {
     preceded(char('['), cut(terminated(sp, char(']'))))(i)
 }
 
-fn nil(i: &str) -> IResult<&str, &str> {
+pub(crate) fn nil(i: &str) -> IResult<&str, &str> {
     preceded(char('('), cut(terminated(sp, char(')'))))(i)
 }
 
