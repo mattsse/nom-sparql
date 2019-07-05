@@ -94,7 +94,7 @@ pub enum TriplesSameSubject {
         property_list: PropertyList,
     },
     Node {
-        triples: TriplesNode,
+        triples_node: TriplesNode,
         property_list: Option<PropertyList>,
     },
 }

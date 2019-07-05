@@ -1,4 +1,4 @@
-use crate::parser::{object_list, sep, var_or_iri_ref};
+use crate::parser::{object_list, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term};
 use crate::query::VarOrIriRef;
 
 use nom::{
@@ -11,7 +11,9 @@ use nom::{
 };
 
 use crate::expression::ArgList;
-use crate::node::{Collection, GraphNode, GraphTerm, PropertyList, TriplesNode, VerbList};
+use crate::node::{
+    Collection, GraphNode, GraphTerm, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
+};
 
 use nom::combinator::{map, opt};
 use nom::multi::{many1, separated_nonempty_list};
@@ -49,7 +51,7 @@ pub(crate) fn collection(i: &str) -> IResult<&str, Collection> {
 pub(crate) fn property_list_not_empty(i: &str) -> IResult<&str, PropertyList> {
     map(
         separated_nonempty_list(
-            sep(take_while1(|c| c == ';')),
+            sp_enc(take_while1(|c| c == ';')),
             map(pair(verb, object_list), |(v, l)| VerbList::new(v, l)),
         ),
         PropertyList,
@@ -74,3 +76,25 @@ pub(crate) fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
         map(blank_node_property_list, TriplesNode::BlankNodePropertyList),
     ))(i)
 }
+
+pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject> {
+    alt((
+        map(
+            sp_sep1(var_or_term, property_list_not_empty),
+            |(var_or_term, property_list)| TriplesSameSubject::Term {
+                var_or_term,
+                property_list,
+            },
+        ),
+        map(
+            sp_sep(triples_node, property_list),
+            |(triples_node, property_list)| TriplesSameSubject::Node {
+                triples_node,
+                property_list,
+            },
+        ),
+    ))(i)
+}
+
+#[cfg(test)]
+mod tests {}
