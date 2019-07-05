@@ -10,6 +10,7 @@ pub enum GraphNode {
 #[derive(Debug, Clone)]
 pub enum VarOrTerm {
     Var(Var),
+    Term(GraphTerm),
 }
 
 #[derive(Debug, Clone)]
@@ -21,14 +22,17 @@ pub struct VerbList {
     pub object_list: ObjectList,
 }
 
-#[derive(Debug, Clone)]
-pub struct PropertyList {
-    pub first: VerbList,
-    pub further: Vec<Option<VerbList>>,
+impl VerbList {
+    pub fn new(verb: Verb, object_list: ObjectList) -> Self {
+        VerbList { verb, object_list }
+    }
 }
 
 #[derive(Debug, Clone)]
-pub struct Collection(Vec<GraphNode>);
+pub struct PropertyList(pub Vec<VerbList>);
+
+#[derive(Debug, Clone)]
+pub struct Collection(pub Vec<GraphNode>);
 
 #[derive(Debug, Clone)]
 pub enum GraphTerm {

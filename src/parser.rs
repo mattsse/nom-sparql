@@ -1,6 +1,7 @@
 use crate::expression::{ArgList, Expression, IriRef, IriRefOrFunction, PrefixedName};
 use crate::node::{
-    GraphNode, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
+    Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
+    TriplesNode, VarOrTerm, VerbList,
 };
 use crate::query::{SparqlQuery, Var, VarOrIriRef};
 use nom::branch::alt;
@@ -10,7 +11,7 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 use nom::combinator::{complete, cond, cut, map, not, opt, peek};
 
 use crate::triple::Verb;
-use nom::multi::{fold_many0, many0, separated_list};
+use nom::multi::{fold_many0, many0, many1, separated_list, separated_nonempty_list};
 use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -51,6 +52,14 @@ where
 fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
     let chars = " \t\n\r";
     take_while(move |c| chars.contains(c))(i)
+}
+
+#[inline]
+fn sep<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &str>
+where
+    F: Fn(&'a str) -> IResult<&'a str, &'a str>,
+{
+    delimited(sp, pat, sp)
 }
 
 fn string_content(i: &str) -> IResult<&str, &str> {
@@ -170,23 +179,55 @@ fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
 }
 
 fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
-    unimplemented!()
+    alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
 }
-fn graph_term(i: &str) -> IResult<&str, VarOrTerm> {
+
+fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
     unimplemented!()
 }
 fn graph_node(i: &str) -> IResult<&str, GraphNode> {
     unimplemented!()
 }
-fn object_list(i: &str) -> IResult<&str, ObjectList> {
-    map(separated_list(tag(","), graph_node), ObjectList)(i)
-}
-fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
-    unimplemented!()
+
+fn collection(i: &str) -> IResult<&str, Collection> {
+    map(
+        delimited(tag("()"), many1(graph_node), tag("()")),
+        Collection,
+    )(i)
 }
 
-fn property_list(i: &str) -> IResult<&str, PropertyList> {
-    unimplemented!()
+fn object_list(i: &str) -> IResult<&str, ObjectList> {
+    map(
+        separated_nonempty_list(sep(tag(",")), graph_node),
+        ObjectList,
+    )(i)
+}
+
+fn property_list_not_empty(i: &str) -> IResult<&str, PropertyList> {
+    map(
+        separated_nonempty_list(
+            sep(take_while1(|c| c == ';')),
+            map(pair(verb, object_list), |(v, l)| VerbList::new(v, l)),
+        ),
+        PropertyList,
+    )(i)
+}
+
+#[inline]
+fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
+    delimited(tag("["), property_list_not_empty, tag("["))(i)
+}
+
+fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
+    alt((
+        map(collection, TriplesNode::Collection),
+        map(blank_node_property_list, TriplesNode::BlankNodePropertyList),
+    ))(i)
+}
+
+#[inline]
+fn property_list(i: &str) -> IResult<&str, Option<PropertyList>> {
+    opt(property_list_not_empty)(i)
 }
 
 fn verb(i: &str) -> IResult<&str, Verb> {
