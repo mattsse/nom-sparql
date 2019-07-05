@@ -12,7 +12,7 @@ use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
 use crate::triple::{graph_node, graph_term};
 use nom::multi::{fold_many0, separated_nonempty_list};
-use nom::sequence::{delimited, pair, preceded, terminated};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
 use nom::{
     bytes::complete::take_while,
     character::{
@@ -46,19 +46,46 @@ where
     parse_query_bytes(input.as_ref().trim().as_bytes())
 }
 
-/// first we write parsers for the smallest elements (here a space character),
-/// then we'll combine them in larger parsers
-pub(crate) fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
-    let chars = " \t\n\r";
-    take_while(move |c| chars.contains(c))(i)
+#[inline]
+pub(crate) fn sp(i: &str) -> IResult<&str, &str> {
+    take_while(is_sp)(i)
 }
 
 #[inline]
-pub(crate) fn sep<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &str>
+pub(crate) fn sp1(i: &str) -> IResult<&str, &str> {
+    take_while1(is_sp)(i)
+}
+
+#[inline]
+pub(crate) fn sp_enc<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &'a str>
 where
     F: Fn(&'a str) -> IResult<&'a str, &'a str>,
 {
     delimited(sp, pat, sp)
+}
+
+#[inline]
+pub(crate) fn sp_sep1<'a, O1, O2, F, G>(
+    first: F,
+    second: G,
+) -> impl Fn(&'a str) -> IResult<&'a str, (O1, O2)>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+    G: Fn(&'a str) -> IResult<&'a str, O2>,
+{
+    separated_pair(first, sp1, second)
+}
+
+#[inline]
+pub(crate) fn sp_sep<'a, O1, O2, F, G>(
+    first: F,
+    second: G,
+) -> impl Fn(&'a str) -> IResult<&'a str, (O1, O2)>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+    G: Fn(&'a str) -> IResult<&'a str, O2>,
+{
+    separated_pair(first, sp, second)
 }
 
 pub(crate) fn string_content(i: &str) -> IResult<&str, &str> {
@@ -183,7 +210,7 @@ pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
 
 pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
     map(
-        separated_nonempty_list(sep(tag(",")), graph_node),
+        separated_nonempty_list(sp_enc(tag(",")), graph_node),
         ObjectList,
     )(i)
 }
@@ -225,6 +252,11 @@ pub(crate) fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
 
 pub(crate) fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
     pair(pname_ns, preceded(sp, pn_local))(i)
+}
+
+#[inline]
+pub(crate) fn is_sp(c: char) -> bool {
+    " \t\n\r".contains(c)
 }
 
 pub(crate) fn is_unicode(c: char) -> bool {
