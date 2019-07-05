@@ -80,7 +80,7 @@ pub enum UnaryExpression {
 pub enum PrimaryExpression {
     BrackettedExpression(Box<Expression>),
     BuiltInCall(BuiltInCall),
-    IriRefOrFunction,
+    IriRefOrFunction(IriRefOrFunction),
     RdfLiteral(RdfLiteral),
     NumericLiteral,
     BooleanLiteral,
@@ -144,6 +144,12 @@ pub enum PrefixedName {
         pn_local: String,
     },
     PnameNS(Option<String>),
+}
+
+#[derive(Debug, Clone)]
+pub struct IriRefOrFunction {
+    pub iri_ref: IriRef,
+    pub arg_list: Option<ArgList>,
 }
 
 #[derive(Debug, Clone)]

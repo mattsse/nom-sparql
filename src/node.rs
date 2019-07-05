@@ -13,10 +13,7 @@ pub enum VarOrTerm {
 }
 
 #[derive(Debug, Clone)]
-pub struct ObjectList {
-    pub first: GraphNode,
-    pub further: Vec<GraphNode>,
-}
+pub struct ObjectList(pub Vec<GraphNode>);
 
 #[derive(Debug, Clone)]
 pub struct VerbList {

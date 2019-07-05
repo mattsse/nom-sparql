@@ -1,13 +1,16 @@
-use crate::expression::{IriRef, PrefixedName};
-use crate::node::{RdfLiteral, RdfLiteralDescriptor};
-use crate::query::{SparqlQuery, Var};
+use crate::expression::{ArgList, Expression, IriRef, IriRefOrFunction, PrefixedName};
+use crate::node::{
+    GraphNode, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
+};
+use crate::query::{SparqlQuery, Var, VarOrIriRef};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, take_while1, take_while_m_n};
+use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, not, opt, peek};
 
-use nom::multi::{fold_many0, many0};
+use crate::triple::Verb;
+use nom::multi::{fold_many0, many0, separated_list};
 use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -153,6 +156,52 @@ fn iri_ref(i: &str) -> IResult<&str, IriRef> {
         map(iri_ref_lex, |i| IriRef::IriRef(i.to_string())),
         map(prefixed_name, IriRef::PrefixedName),
     ))(i)
+}
+
+fn iri_ref_or_fun(i: &str) -> IResult<&str, IriRefOrFunction> {
+    unimplemented!()
+}
+
+fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
+    alt((
+        map(var, VarOrIriRef::Var),
+        map(iri_ref, VarOrIriRef::IriRef),
+    ))(i)
+}
+
+fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
+    unimplemented!()
+}
+fn graph_term(i: &str) -> IResult<&str, VarOrTerm> {
+    unimplemented!()
+}
+fn graph_node(i: &str) -> IResult<&str, GraphNode> {
+    unimplemented!()
+}
+fn object_list(i: &str) -> IResult<&str, ObjectList> {
+    map(separated_list(tag(","), graph_node), ObjectList)(i)
+}
+fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
+    unimplemented!()
+}
+
+fn property_list(i: &str) -> IResult<&str, PropertyList> {
+    unimplemented!()
+}
+
+fn verb(i: &str) -> IResult<&str, Verb> {
+    alt((
+        map(var_or_iri_ref, Verb::VarOrIriRef),
+        map(tag_no_case("a"), |_| Verb::A),
+    ))(i)
+}
+
+fn arg_list(i: &str) -> IResult<&str, ArgList> {
+    unimplemented!()
+}
+
+fn expression(i: &str) -> IResult<&str, Expression> {
+    unimplemented!()
 }
 
 fn var(i: &str) -> IResult<&str, Var> {
