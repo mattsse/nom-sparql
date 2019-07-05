@@ -10,8 +10,8 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::triple::{graph_node, graph_term};
-use nom::multi::{fold_many0, separated_nonempty_list};
+use crate::triple::{graph_term};
+use nom::multi::{fold_many0};
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -19,7 +19,7 @@ use nom::{
         complete::{alpha1, alphanumeric1},
         is_alphabetic,
     },
-    error::{ErrorKind, ParseError},
+    error::{ErrorKind},
     AsChar, Err, IResult,
 };
 
@@ -206,13 +206,6 @@ pub(crate) fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
 
 pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
     alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
-}
-
-pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
-    map(
-        separated_nonempty_list(sp_enc(tag(",")), graph_node),
-        ObjectList,
-    )(i)
 }
 
 pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {

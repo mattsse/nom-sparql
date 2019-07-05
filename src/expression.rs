@@ -1,6 +1,7 @@
 use crate::node::RdfLiteral;
 use crate::query::Var;
 
+use crate::literal::NumericLiteral;
 use std::{fmt, str::FromStr};
 
 #[derive(Debug, Clone)]
@@ -45,15 +46,8 @@ pub struct AdditiveExpression {
 pub enum AddExpression {
     Add(MultiplicativeExpression),
     Sub(MultiplicativeExpression),
-    NegNumericLiteral(NumLiteral),
-    PosNumericLiteral(NumLiteral),
-}
-
-#[derive(Debug, Clone)]
-pub enum NumLiteral {
-    Int(usize),
-    Decimal(f64),
-    Double(f64),
+    NegNumericLiteral(NumericLiteral),
+    PosNumericLiteral(NumericLiteral),
 }
 
 #[derive(Debug, Clone)]
@@ -83,19 +77,9 @@ pub enum PrimaryExpression {
     IriRefOrFunction(IriRefOrFunction),
     RdfLiteral(RdfLiteral),
     NumericLiteral,
-    BooleanLiteral,
+    BooleanLiteral(bool),
     Var,
 }
-
-#[derive(Debug, Clone)]
-pub enum NumericLiteral {
-    Unsigned(NumLiteral),
-    Pos(NumLiteral),
-    Neg(NumLiteral),
-}
-
-#[derive(Debug, Clone)]
-pub struct BooleanLiteral(bool);
 
 #[derive(Debug, Clone)]
 pub enum BuiltInCall {

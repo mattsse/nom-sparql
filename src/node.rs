@@ -1,4 +1,5 @@
 use crate::expression::{Constraint, IriRef};
+use crate::literal::NumericLiteral;
 use crate::query::{Var, VarOrIriRef};
 use crate::triple::Verb;
 
@@ -36,9 +37,9 @@ pub struct Collection(pub Vec<GraphNode>);
 
 #[derive(Debug, Clone)]
 pub enum GraphTerm {
-    IriRef(VarOrIriRef),
+    IriRef(IriRef),
     RdfLiteral(RdfLiteral),
-    NumericLiteral,
+    NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
     BlankNode(BlankNode),
     /// empty parentheses

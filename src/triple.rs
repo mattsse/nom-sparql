@@ -1,4 +1,6 @@
-use crate::parser::{object_list, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term};
+use crate::parser::{
+    anon, iri_ref, nil, pn_local, rdf_literal, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term,
+};
 use crate::query::VarOrIriRef;
 
 use nom::{
@@ -12,9 +14,11 @@ use nom::{
 
 use crate::expression::ArgList;
 use crate::node::{
-    Collection, GraphNode, GraphTerm, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
+    BlankNode, Collection, GraphNode, GraphTerm, ObjectList, PropertyList, TriplesNode,
+    TriplesSameSubject, VerbList,
 };
 
+use crate::literal::{boolean, numeric_literal};
 use nom::combinator::{map, opt};
 use nom::multi::{many1, separated_nonempty_list};
 use nom::sequence::{delimited, pair};
@@ -29,8 +33,24 @@ pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
     unimplemented!()
 }
 
-pub(crate) fn graph_term(_i: &str) -> IResult<&str, GraphTerm> {
-    unimplemented!()
+pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
+    alt((
+        map(iri_ref, GraphTerm::IriRef),
+        map(rdf_literal, GraphTerm::RdfLiteral),
+        map(numeric_literal, GraphTerm::NumericLiteral),
+        map(boolean, GraphTerm::BooleanLiteral),
+        map(blank_node, GraphTerm::BlankNode),
+        map(nil, |_| GraphTerm::Nil),
+    ))(i)
+}
+
+pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
+    alt((
+        map(sp_sep1(tag("_:"), pn_local), |(_, label)| {
+            BlankNode::Label(label)
+        }),
+        map(anon, |_| BlankNode::Anon),
+    ))(i)
 }
 pub(crate) fn graph_node(_i: &str) -> IResult<&str, GraphNode> {
     unimplemented!()
@@ -45,6 +65,13 @@ pub(crate) fn collection(i: &str) -> IResult<&str, Collection> {
     map(
         delimited(tag("()"), many1(graph_node), tag("()")),
         Collection,
+    )(i)
+}
+
+pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
+    map(
+        separated_nonempty_list(sp_enc(tag(",")), graph_node),
+        ObjectList,
     )(i)
 }
 
@@ -97,4 +124,8 @@ pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject>
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+
+    #[test]
+    fn is_object_list() {}
+}
