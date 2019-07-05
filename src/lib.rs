@@ -2,6 +2,7 @@
 
 #![allow(unused)]
 
+pub mod clauses;
 pub mod expression;
 pub mod keywords;
 pub mod node;

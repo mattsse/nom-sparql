@@ -1,7 +1,7 @@
 use crate::node::RdfLiteral;
 use crate::query::Var;
-use std::num::ParseIntError;
-use std::{fmt, str::FromStr, string::ParseError};
+
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub struct Expression(ConditionalOrExpression);

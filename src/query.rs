@@ -107,16 +107,19 @@ pub enum GraphClause {
     Named(IriRef),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum LimitOffsetClause {
-    LimitClauseOffsetClause {
-        limit_clause: LimitClause,
-        offset_clause: Option<OffsetClause>,
-    },
-    OffsetClauseLimitClause {
-        offset_clause: OffsetClause,
-        limit_clause: Option<LimitClause>,
-    },
+    LimitOffset { limit: u64, offset: Option<u64> },
+    OffsetLimit { offset: u64, limit: Option<u64> },
+}
+
+impl LimitOffsetClause {
+    pub fn limit_offset(limit: u64, offset: Option<u64>) -> Self {
+        LimitOffsetClause::LimitOffset { limit, offset }
+    }
+    pub fn offset_limit(offset: u64, limit: Option<u64>) -> Self {
+        LimitOffsetClause::OffsetLimit { offset, limit }
+    }
 }
 
 #[derive(Debug, Clone)]

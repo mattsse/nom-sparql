@@ -8,7 +8,7 @@ use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
-use nom::combinator::{complete, cond, cut, map, not, opt, peek};
+use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
 use crate::triple::Verb;
 use nom::multi::{fold_many0, many0, many1, separated_list, separated_nonempty_list};
@@ -19,7 +19,6 @@ use nom::{
         complete::{alpha1, alphanumeric1},
         is_alphabetic,
     },
-    dbg_dmp,
     error::{ErrorKind, ParseError},
     AsChar, Err, IResult,
 };
@@ -49,7 +48,7 @@ where
 
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
-fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
+pub(crate) fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
     let chars = " \t\n\r";
     take_while(move |c| chars.contains(c))(i)
 }
@@ -167,7 +166,7 @@ fn iri_ref(i: &str) -> IResult<&str, IriRef> {
     ))(i)
 }
 
-fn iri_ref_or_fun(i: &str) -> IResult<&str, IriRefOrFunction> {
+fn iri_ref_or_fun(_i: &str) -> IResult<&str, IriRefOrFunction> {
     unimplemented!()
 }
 
@@ -182,10 +181,10 @@ fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
     alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
 }
 
-fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
+fn graph_term(_i: &str) -> IResult<&str, GraphTerm> {
     unimplemented!()
 }
-fn graph_node(i: &str) -> IResult<&str, GraphNode> {
+fn graph_node(_i: &str) -> IResult<&str, GraphNode> {
     unimplemented!()
 }
 
@@ -237,11 +236,11 @@ fn verb(i: &str) -> IResult<&str, Verb> {
     ))(i)
 }
 
-fn arg_list(i: &str) -> IResult<&str, ArgList> {
+fn arg_list(_i: &str) -> IResult<&str, ArgList> {
     unimplemented!()
 }
 
-fn expression(i: &str) -> IResult<&str, Expression> {
+fn expression(_i: &str) -> IResult<&str, Expression> {
     unimplemented!()
 }
 
