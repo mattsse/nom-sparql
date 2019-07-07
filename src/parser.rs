@@ -10,8 +10,8 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::triple::{graph_term};
-use nom::multi::{fold_many0};
+use crate::triple::graph_term;
+use nom::multi::fold_many0;
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
 use nom::{
     bytes::complete::take_while,
@@ -19,7 +19,7 @@ use nom::{
         complete::{alpha1, alphanumeric1},
         is_alphabetic,
     },
-    error::{ErrorKind},
+    error::ErrorKind,
     AsChar, Err, IResult,
 };
 
