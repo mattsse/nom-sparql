@@ -11,7 +11,7 @@ use nom::{
     Err, IResult, ParseTo,
 };
 
-use crate::expression::Sign;
+use crate::math::Sign;
 use nom::character::complete::{alpha1, digit0, none_of};
 use nom::combinator::{cut, not, opt, recognize};
 use nom::error::{make_error, ErrorKind};

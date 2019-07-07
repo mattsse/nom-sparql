@@ -6,6 +6,7 @@ pub mod clauses;
 pub mod expression;
 pub mod keywords;
 pub mod literal;
+pub mod math;
 pub mod node;
 pub mod parser;
 pub mod query;
