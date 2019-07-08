@@ -1,8 +1,8 @@
 use crate::node::RdfLiteral;
 use crate::query::Var;
 
+use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
 use crate::literal::NumericLiteral;
-use crate::math::{ConditionalOrExpression, NumericExpression};
 use nom::IResult;
 
 #[derive(Debug, Clone)]
@@ -106,6 +106,10 @@ pub enum Constraint {
     Bracketted(Box<Expression>),
     BuiltInCall(BuiltInCall),
     FunctionCall(Box<FunctionCall>),
+}
+
+pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
+    unimplemented!()
 }
 
 pub(crate) fn function_call(i: &str) -> IResult<&str, FunctionCall> {

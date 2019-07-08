@@ -216,10 +216,6 @@ pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
     alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
 }
 
-pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
-    unimplemented!()
-}
-
 pub(crate) fn var(i: &str) -> IResult<&str, Var> {
     alt((
         map(preceded(char('?'), preceded(sp, var_name)), Var::Var1),
