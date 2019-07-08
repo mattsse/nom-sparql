@@ -1,4 +1,4 @@
-use crate::parser::sp;
+use crate::parser::{iri, preceded_tag, sp, sp1};
 
 use nom::{
     branch::alt,
@@ -9,9 +9,26 @@ use nom::{
     IResult,
 };
 
+use crate::expression::Iri;
 use crate::query::LimitOffsetClause;
+use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
 use nom::sequence::separated_pair;
+
+#[inline]
+pub(crate) fn insert_clause(i: &str) -> IResult<&str, Quads> {
+    preceded_tag("insert", quads_pattern)(i)
+}
+
+#[inline]
+pub(crate) fn delete_clause(i: &str) -> IResult<&str, Quads> {
+    preceded_tag("offset", quads_pattern)(i)
+}
+
+#[inline]
+pub(crate) fn using_clause(i: &str) -> IResult<&str, Iri> {
+    preceded_tag("using", alt((preceded_tag("named", iri), iri)))(i)
+}
 
 #[inline]
 pub(crate) fn int_clause<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, u64>

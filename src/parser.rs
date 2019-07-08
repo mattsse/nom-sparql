@@ -1,11 +1,11 @@
-use crate::expression::{Expression, IriRef, IriRefOrFunction, PrefixedName};
+use crate::expression::{Expression, Iri, IriRefOrFunction, PrefixedName};
 use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
 };
-use crate::query::{SparqlQuery, Var, VarOrIriRef};
+use crate::query::{SparqlQuery, Var, VarOrIri};
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, take_while1, take_while_m_n};
+use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
@@ -44,6 +44,17 @@ where
     T: AsRef<str>,
 {
     parse_query_bytes(input.as_ref().trim().as_bytes())
+}
+
+#[inline]
+pub(crate) fn preceded_tag<'a, O1, F>(
+    tag: &'a str,
+    pat: F,
+) -> impl Fn(&'a str) -> IResult<&'a str, O1>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+{
+    preceded(terminated(tag_no_case(tag), sp1), pat)
 }
 
 #[inline]
@@ -114,7 +125,7 @@ pub(crate) fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
             map(string_literal, String::from),
             opt(alt((
                 map(language_tag, RdfLiteralDescriptor::LangTag),
-                map(preceded(tag("^^"), iri_ref), RdfLiteralDescriptor::IriRef),
+                map(preceded(tag("^^"), iri), RdfLiteralDescriptor::IriRef),
             ))),
         ),
         |(literal, descriptor)| RdfLiteral {
@@ -186,10 +197,10 @@ pub(crate) fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
-pub(crate) fn iri_ref(i: &str) -> IResult<&str, IriRef> {
+pub(crate) fn iri(i: &str) -> IResult<&str, Iri> {
     alt((
-        map(iri_ref_lex, |i| IriRef::IriRef(i.to_string())),
-        map(prefixed_name, IriRef::PrefixedName),
+        map(iri_ref_lex, |i| Iri::Iri(i.to_string())),
+        map(prefixed_name, Iri::PrefixedName),
     ))(i)
 }
 
@@ -197,11 +208,8 @@ pub(crate) fn iri_ref_or_fun(_i: &str) -> IResult<&str, IriRefOrFunction> {
     unimplemented!()
 }
 
-pub(crate) fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIriRef> {
-    alt((
-        map(var, VarOrIriRef::Var),
-        map(iri_ref, VarOrIriRef::IriRef),
-    ))(i)
+pub(crate) fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIri> {
+    alt((map(var, VarOrIri::Var), map(iri, VarOrIri::Iri)))(i)
 }
 
 pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
@@ -363,10 +371,10 @@ mod tests {
     #[test]
     fn is_iri_ref() {
         assert_eq!(
-            iri_ref("<http://education.data.gov.uk/def/school/>"),
+            iri("<http://education.data.gov.uk/def/school/>"),
             Ok((
                 "",
-                IriRef::IriRef("http://education.data.gov.uk/def/school/".to_string())
+                Iri::IriRef("http://education.data.gov.uk/def/school/".to_string())
             ))
         );
     }
@@ -421,7 +429,7 @@ mod tests {
                 "",
                 RdfLiteral::new(
                     "xyz",
-                    RdfLiteralDescriptor::IriRef(IriRef::IriRef(
+                    RdfLiteralDescriptor::IriRef(Iri::Iri(
                         "http://example.org/ns/userDatatype".to_string()
                     ))
                 )
@@ -433,7 +441,7 @@ mod tests {
                 "",
                 RdfLiteral::new(
                     "abc",
-                    RdfLiteralDescriptor::IriRef(IriRef::PrefixedName(PrefixedName::PnameLN {
+                    RdfLiteralDescriptor::IriRef(Iri::PrefixedName(PrefixedName::PnameLN {
                         pn_prefix: Some("appNS".to_string()),
                         pn_local: "appDataType".to_string()
                     }))

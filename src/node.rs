@@ -1,7 +1,27 @@
-use crate::expression::{Constraint, IriRef};
+use crate::expression::{Constraint, Iri};
 use crate::literal::NumericLiteral;
-use crate::query::{Var, VarOrIriRef};
-use crate::triple::Verb;
+use crate::parser::{iri, sp1, sp_sep1};
+use crate::query::{Var, VarOrIri};
+use crate::triple::{TriplesBlock, Verb};
+use nom::branch::alt;
+use nom::bytes::complete::tag_no_case;
+use nom::combinator::{map, opt};
+use nom::sequence::pair;
+use nom::IResult;
+
+#[derive(Debug, Clone)]
+pub enum GraphOrDefault {
+    Graph(Iri),
+    Default,
+}
+
+#[derive(Debug, Clone)]
+pub enum GraphRefAll {
+    GraphRef(Iri),
+    Default,
+    Named,
+    All,
+}
 
 #[derive(Debug, Clone)]
 pub enum GraphNode {
@@ -37,7 +57,7 @@ pub struct Collection(pub Vec<GraphNode>);
 
 #[derive(Debug, Clone)]
 pub enum GraphTerm {
-    IriRef(IriRef),
+    IriRef(Iri),
     RdfLiteral(RdfLiteral),
     NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
@@ -73,7 +93,7 @@ impl RdfLiteral {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RdfLiteralDescriptor {
     LangTag(String),
-    IriRef(IriRef),
+    IriRef(Iri),
 }
 
 #[derive(Debug, Clone)]
@@ -98,18 +118,6 @@ pub enum TriplesSameSubject {
         triples_node: TriplesNode,
         property_list: Option<PropertyList>,
     },
-}
-
-#[derive(Debug, Clone)]
-pub struct ConstructTriples {
-    pub first_triples: TriplesSameSubject,
-    pub further_triples: Vec<TriplesSameSubject>,
-}
-
-#[derive(Debug, Clone)]
-pub struct TriplesBlock {
-    pub first_triples: TriplesSameSubject,
-    pub further_triples: Vec<TriplesSameSubject>,
 }
 
 #[derive(Debug, Clone)]
@@ -145,6 +153,32 @@ pub struct GroupOrUnionGraphPattern {
 
 #[derive(Debug, Clone)]
 pub struct GraphGraphPattern {
-    pub var_or_iri_ref: VarOrIriRef,
+    pub var_or_iri_ref: VarOrIri,
     pub pattern: GroupGraphPattern,
 }
+
+pub(crate) fn graph_ref(i: &str) -> IResult<&str, Iri> {
+    map(sp_sep1(tag_no_case("graph"), iri), |(_, iri)| iri)(i)
+}
+
+pub(crate) fn graph_or_default(i: &str) -> IResult<&str, GraphOrDefault> {
+    alt((
+        map(tag_no_case("default"), |_| GraphOrDefault::Default),
+        map(
+            pair(opt(pair(tag_no_case("graph"), sp1)), iri),
+            |(_, iri)| GraphOrDefault::Graph(iri),
+        ),
+    ))(i)
+}
+
+pub(crate) fn graph_ref_all(i: &str) -> IResult<&str, GraphRefAll> {
+    alt((
+        map(tag_no_case("default"), |_| GraphRefAll::Default),
+        map(tag_no_case("named"), |_| GraphRefAll::Named),
+        map(tag_no_case("all"), |_| GraphRefAll::All),
+        map(graph_ref, GraphRefAll::GraphRef),
+    ))(i)
+}
+
+#[cfg(test)]
+mod tests {}

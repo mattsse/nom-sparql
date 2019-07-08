@@ -1,4 +1,4 @@
-use crate::expression::{Constraint, IriRef, OrderExpression};
+use crate::expression::{Constraint, Iri, OrderExpression};
 use crate::node::GroupGraphPattern;
 use std::fmt;
 
@@ -41,7 +41,7 @@ pub struct DescribeQuery {
 
 #[derive(Debug, Clone)]
 pub enum VarIriRefWildcard {
-    VarIriRef(Vec<VarOrIriRef>),
+    VarIriRef(Vec<VarOrIri>),
     WildCard,
 }
 
@@ -103,8 +103,8 @@ pub struct DataSetClause {
 
 #[derive(Debug, Clone)]
 pub enum GraphClause {
-    Default(IriRef),
-    Named(IriRef),
+    Default(Iri),
+    Named(Iri),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -131,9 +131,9 @@ pub struct WhereClause {
 pub struct Prolog {}
 
 #[derive(Debug, Clone)]
-pub enum VarOrIriRef {
+pub enum VarOrIri {
     Var(Var),
-    IriRef(IriRef),
+    Iri(Iri),
 }
 
 #[derive(Debug, Clone)]

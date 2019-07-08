@@ -2,7 +2,8 @@ use crate::node::RdfLiteral;
 use crate::query::Var;
 
 use crate::literal::NumericLiteral;
-use crate::math::{NumericExpression, ConditionalOrExpression};
+use crate::math::{ConditionalOrExpression, NumericExpression};
+use nom::IResult;
 
 #[derive(Debug, Clone)]
 pub struct Expression(ConditionalOrExpression);
@@ -43,18 +44,18 @@ pub enum BuiltInCall {
 pub struct RegexExpression {}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum IriRef {
-    IriRef(String),
+pub enum Iri {
+    Iri(String),
     PrefixedName(PrefixedName),
 }
 
-impl IriRef {
+impl Iri {
     pub fn iri_ref<T: ToString>(iri_ref: T) -> Self {
-        IriRef::IriRef(iri_ref.to_string())
+        Iri::Iri(iri_ref.to_string())
     }
 
     pub fn prefixed_name<T: Into<PrefixedName>>(prefixed_name: T) -> Self {
-        IriRef::PrefixedName(prefixed_name.into())
+        Iri::PrefixedName(prefixed_name.into())
     }
 }
 
@@ -69,7 +70,7 @@ pub enum PrefixedName {
 
 #[derive(Debug, Clone)]
 pub struct IriRefOrFunction {
-    pub iri_ref: IriRef,
+    pub iri_ref: Iri,
     pub arg_list: Option<ArgList>,
 }
 
@@ -96,7 +97,7 @@ pub enum ArgList {
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {
-    pub iri_ref: IriRef,
+    pub iri_ref: Iri,
     pub args: ArgList,
 }
 
@@ -105,4 +106,8 @@ pub enum Constraint {
     Bracketted(Box<Expression>),
     BuiltInCall(BuiltInCall),
     FunctionCall(Box<FunctionCall>),
+}
+
+pub(crate) fn function_call(i: &str) -> IResult<&str, FunctionCall> {
+    unimplemented!()
 }

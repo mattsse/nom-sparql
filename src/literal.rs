@@ -24,7 +24,12 @@ pub enum NumericLiteral {
     Double((f64, Option<i64>)),
 }
 
-pub(crate) fn boolean<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, bool, E> {
+#[inline]
+pub(crate) fn silent(i: &str) -> IResult<&str, bool> {
+    map(tag_no_case("silent"), |_| true)(i)
+}
+
+pub(crate) fn boolean(i: &str) -> IResult<&str, bool> {
     alt((
         map(tag_no_case("false"), |_| false),
         map(tag_no_case("true"), |_| true),

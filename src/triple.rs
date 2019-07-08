@@ -1,7 +1,7 @@
 use crate::parser::{
-    anon, iri_ref, nil, pn_local, rdf_literal, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term,
+    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term,
 };
-use crate::query::VarOrIriRef;
+use crate::query::VarOrIri;
 
 use nom::{
     branch::alt,
@@ -25,8 +25,52 @@ use nom::sequence::{delimited, pair};
 
 #[derive(Clone, Debug)]
 pub enum Verb {
-    VarOrIriRef(VarOrIriRef),
+    VarOrIriRef(VarOrIri),
     A,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConstructTriples {
+    pub first_triples: TriplesSameSubject,
+    pub further_triples: Vec<TriplesSameSubject>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TriplesBlock {
+    pub first_triples: TriplesSameSubject,
+    pub further_triples: Vec<TriplesSameSubject>,
+}
+
+pub type TriplesTemplate = Vec<TriplesSameSubject>;
+
+#[derive(Debug, Clone)]
+pub struct Quads {
+    pub first_triples: TriplesTemplate,
+    pub entries: Vec<QuadsEntry>,
+}
+
+#[derive(Debug, Clone)]
+pub struct QuadsEntry {
+    pub quads_not_triples: QuadsNotTriples,
+    pub triples_template: Option<TriplesTemplate>,
+}
+
+#[derive(Debug, Clone)]
+pub struct QuadsNotTriples {
+    pub var_or_iri: VarOrIri,
+    pub triples_template: Option<TriplesTemplate>,
+}
+
+pub(crate) fn quads_pattern(i: &str) -> IResult<&str, Quads> {
+    delimited(terminated(tag("{"), sp), quads, terminated(sp, tag("}")))(i)
+}
+
+pub(crate) fn quad_data(i: &str) -> IResult<&str, Quads> {
+    quads_pattern(i)
+}
+
+pub(crate) fn quads(_i: &str) -> IResult<&str, Quads> {
+    unimplemented!()
 }
 
 pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
@@ -35,7 +79,7 @@ pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
 
 pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
     alt((
-        map(iri_ref, GraphTerm::IriRef),
+        map(iri, GraphTerm::IriRef),
         map(rdf_literal, GraphTerm::RdfLiteral),
         map(numeric_literal, GraphTerm::NumericLiteral),
         map(boolean, GraphTerm::BooleanLiteral),

@@ -2,7 +2,6 @@ use crate::expression::PrimaryExpression;
 use crate::literal::NumericLiteral;
 use std::{fmt, str::FromStr};
 
-
 #[derive(Debug, Clone)]
 pub struct RelationalExpression {
     pub lhs: NumericExpression,
@@ -20,7 +19,6 @@ pub struct ConditionalOrExpression {
     pub lhs: ConditionalAndExpression,
     pub rhs: Vec<ConditionalAndExpression>,
 }
-
 
 #[derive(Debug, Clone)]
 pub enum NumericExpression {
