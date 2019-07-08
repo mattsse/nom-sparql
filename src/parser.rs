@@ -370,7 +370,7 @@ mod tests {
             iri("<http://education.data.gov.uk/def/school/>"),
             Ok((
                 "",
-                Iri::IriRef("http://education.data.gov.uk/def/school/".to_string())
+                Iri::Iri("http://education.data.gov.uk/def/school/".to_string())
             ))
         );
     }
