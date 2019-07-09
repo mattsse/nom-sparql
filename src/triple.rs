@@ -96,6 +96,7 @@ pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
         map(anon, |_| BlankNode::Anon),
     ))(i)
 }
+
 pub(crate) fn graph_node(_i: &str) -> IResult<&str, GraphNode> {
     unimplemented!()
 }

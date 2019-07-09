@@ -1,17 +1,18 @@
 use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var_or_iri_ref,
+    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri_ref,
     var_or_term,
 };
-use crate::query::VarOrIri;
+use crate::query::{Var, VarOrIri};
 
 use crate::expression::Iri;
-use crate::triple::Verb;
+use crate::node::{ObjectList, VarOrTerm};
+use crate::triple::{object_list, property_list_not_empty, Verb};
 use nom::bits::streaming::take;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::error::ErrorKind;
-use nom::multi::separated_nonempty_list;
-use nom::sequence::{delimited, pair};
+use nom::multi::{many0, many1, separated_nonempty_list};
+use nom::sequence::{delimited, pair, separated_pair, tuple};
 use nom::Err;
 use nom::{
     branch::alt,
@@ -22,6 +23,39 @@ use nom::{
     IResult, Needed,
 };
 use std::str::FromStr;
+
+#[derive(Debug, Clone)]
+pub enum GraphNodePath {
+    VarOrTerm(VarOrTerm),
+    TriplesNodePath(TriplesNodePath),
+}
+#[derive(Debug, Clone)]
+pub enum TriplesNodePath {
+    CollectionPath(Vec<GraphNodePath>),
+    BlankNodePropertyListPath(PropertyListPath),
+}
+
+#[derive(Debug, Clone)]
+pub struct PropertyListPath {
+    pub verb_path_or_simple: VerbPathOrSimple,
+    pub object_list_path: ObjectListPath,
+    pub entries: Vec<PropertyListPathEntry>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PropertyListPathEntry {
+    pub verb_path_or_simple: VerbPathOrSimple,
+    pub object_list: ObjectList,
+}
+
+#[derive(Debug, Clone)]
+pub struct ObjectListPath(pub Vec<GraphNodePath>);
+
+#[derive(Debug, Clone)]
+pub enum VerbPathOrSimple {
+    Path(Path),
+    Simple(Var),
+}
 
 pub(crate) type Path = PathAlternative;
 
@@ -87,6 +121,80 @@ pub enum IriOrAOrCaret {
 pub enum IriOrA {
     Iri(Iri),
     A,
+}
+
+pub(crate) fn blank_node_property_list_path(i: &str) -> IResult<&str, PropertyListPath> {
+    delimited(
+        terminated(tag("["), sp),
+        property_list_path_not_empty,
+        preceded(sp, tag("]")),
+    )(i)
+}
+
+pub(crate) fn property_list_path_not_empty(i: &str) -> IResult<&str, PropertyListPath> {
+    map(
+        (tuple((
+            terminated(verb_path_or_simple, sp1),
+            object_list_path,
+            many0(preceded(
+                take_while1(|c| c == ';'),
+                property_list_path_entry,
+            )),
+        ))),
+        |(verb_path_or_simple, object_list_path, entries)| PropertyListPath {
+            verb_path_or_simple,
+            object_list_path,
+            entries,
+        },
+    )(i)
+}
+
+pub(crate) fn property_list_path(i: &str) -> IResult<&str, Option<PropertyListPath>> {
+    opt(property_list_path_not_empty)(i)
+}
+
+pub(crate) fn verb_path_or_simple(i: &str) -> IResult<&str, VerbPathOrSimple> {
+    alt((
+        map(path_alternative, VerbPathOrSimple::Path),
+        map(var, VerbPathOrSimple::Simple),
+    ))(i)
+}
+
+pub(crate) fn object_list_path(i: &str) -> IResult<&str, ObjectListPath> {
+    map(
+        separated_nonempty_list(sp_enc(tag(";")), graph_node_path),
+        ObjectListPath,
+    )(i)
+}
+
+pub(crate) fn property_list_path_entry(i: &str) -> IResult<&str, PropertyListPathEntry> {
+    map(
+        separated_pair(verb_path_or_simple, sp1, object_list),
+        |(verb_path_or_simple, object_list)| PropertyListPathEntry {
+            verb_path_or_simple,
+            object_list,
+        },
+    )(i)
+}
+
+pub(crate) fn triples_node_path(i: &str) -> IResult<&str, TriplesNodePath> {
+    alt((
+        map(
+            blank_node_property_list_path,
+            TriplesNodePath::BlankNodePropertyListPath,
+        ),
+        map(
+            delimited(tag("("), many1(graph_node_path), tag(")")),
+            TriplesNodePath::CollectionPath,
+        ),
+    ))(i)
+}
+
+pub(crate) fn graph_node_path(i: &str) -> IResult<&str, GraphNodePath> {
+    alt((
+        map(var_or_term, GraphNodePath::VarOrTerm),
+        map(triples_node_path, GraphNodePath::TriplesNodePath),
+    ))(i)
 }
 
 pub(crate) fn path_alternative(i: &str) -> IResult<&str, PathAlternative> {

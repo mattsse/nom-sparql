@@ -1,12 +1,12 @@
 use crate::expression::{Constraint, Iri};
 use crate::literal::NumericLiteral;
-use crate::parser::{iri, sp1, sp_sep1};
+use crate::parser::{iri, sp, sp1, sp_sep1};
 use crate::query::{Var, VarOrIri};
-use crate::triple::{TriplesBlock, Verb};
+use crate::triple::{property_list, property_list_not_empty, TriplesBlock, Verb};
 use nom::branch::alt;
-use nom::bytes::complete::tag_no_case;
+use nom::bytes::complete::{tag, tag_no_case};
 use nom::combinator::{map, opt};
-use nom::sequence::pair;
+use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::IResult;
 
 #[derive(Debug, Clone)]
