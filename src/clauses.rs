@@ -9,11 +9,16 @@ use nom::{
     IResult,
 };
 
+use crate::data::{datablock, DataBlock};
 use crate::expression::Iri;
 use crate::query::LimitOffsetClause;
 use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
 use nom::sequence::separated_pair;
+
+pub(crate) fn values_clause(i: &str) -> IResult<&str, Option<DataBlock>> {
+    opt(preceded_tag("values", datablock))(i)
+}
 
 #[inline]
 pub(crate) fn insert_clause(i: &str) -> IResult<&str, Quads> {
