@@ -12,7 +12,7 @@ pub struct Expression(ConditionalOrExpression);
 pub enum PrimaryExpression {
     BrackettedExpression(Box<Expression>),
     BuiltInCall(BuiltInCall),
-    IriRefOrFunction(IriRefOrFunction),
+    IriRefOrFunction(IriOrFunction),
     RdfLiteral(RdfLiteral),
     NumericLiteral,
     BooleanLiteral(bool),
@@ -69,8 +69,8 @@ pub enum PrefixedName {
 }
 
 #[derive(Debug, Clone)]
-pub struct IriRefOrFunction {
-    pub iri_ref: Iri,
+pub struct IriOrFunction {
+    pub iri: Iri,
     pub arg_list: Option<ArgList>,
 }
 

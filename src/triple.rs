@@ -1,5 +1,5 @@
 use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri_ref, var_or_term,
+    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term,
 };
 use crate::query::VarOrIri;
 
@@ -19,9 +19,10 @@ use crate::node::{
 };
 
 use crate::literal::{boolean, numeric_literal};
+use nom::character::complete::{char, space1};
 use nom::combinator::{map, opt};
-use nom::multi::{many1, separated_nonempty_list};
-use nom::sequence::{delimited, pair};
+use nom::multi::{many0, many1, separated_nonempty_list};
+use nom::sequence::{delimited, pair, separated_pair, tuple};
 
 #[derive(Clone, Debug)]
 pub enum Verb {
@@ -45,7 +46,7 @@ pub type TriplesTemplate = Vec<TriplesSameSubject>;
 
 #[derive(Debug, Clone)]
 pub struct Quads {
-    pub first_triples: TriplesTemplate,
+    pub first_triples: Option<TriplesTemplate>,
     pub entries: Vec<QuadsEntry>,
 }
 
@@ -69,8 +70,38 @@ pub(crate) fn quad_data(i: &str) -> IResult<&str, Quads> {
     quads_pattern(i)
 }
 
-pub(crate) fn quads(_i: &str) -> IResult<&str, Quads> {
-    unimplemented!()
+pub(crate) fn quads(i: &str) -> IResult<&str, Quads> {
+    map(
+        pair(opt(terminated(triples_template, sp)), many0(quads_entry)),
+        |(first_triples, entries)| Quads {
+            first_triples,
+            entries,
+        },
+    )(i)
+}
+
+pub(crate) fn quads_not_triples(i: &str) -> IResult<&str, QuadsNotTriples> {
+    map(
+        tuple((
+            tag_no_case("graph"),
+            sp_enc(var_or_iri),
+            delimited(char('{'), sp_enc(opt(triples_template)), char('}')),
+        )),
+        |(_, var_or_iri, triples_template)| QuadsNotTriples {
+            var_or_iri,
+            triples_template,
+        },
+    )(i)
+}
+
+pub(crate) fn quads_entry(i: &str) -> IResult<&str, QuadsEntry> {
+    map(
+        separated_pair(quads_not_triples, opt(char('.')), opt(triples_template)),
+        |(quads_not_triples, triples_template)| QuadsEntry {
+            quads_not_triples,
+            triples_template,
+        },
+    )(i)
 }
 
 pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
@@ -97,8 +128,11 @@ pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
     ))(i)
 }
 
-pub(crate) fn graph_node(_i: &str) -> IResult<&str, GraphNode> {
-    unimplemented!()
+pub(crate) fn graph_node(i: &str) -> IResult<&str, GraphNode> {
+    alt((
+        map(var_or_term, GraphNode::VarOrTerm),
+        map(triples_node, |node| GraphNode::TriplesNode(Box::new(node))),
+    ))(i)
 }
 
 #[inline]
@@ -137,7 +171,7 @@ pub(crate) fn property_list(i: &str) -> IResult<&str, Option<PropertyList>> {
 
 pub(crate) fn verb(i: &str) -> IResult<&str, Verb> {
     alt((
-        map(var_or_iri_ref, Verb::VarOrIriRef),
+        map(var_or_iri, Verb::VarOrIriRef),
         map(tag_no_case("a"), |_| Verb::A),
     ))(i)
 }
@@ -147,6 +181,10 @@ pub(crate) fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
         map(collection, TriplesNode::Collection),
         map(blank_node_property_list, TriplesNode::BlankNodePropertyList),
     ))(i)
+}
+
+pub(crate) fn triples_template(i: &str) -> IResult<&str, TriplesTemplate> {
+    separated_nonempty_list(many1(char('.')), triples_same_subject)(i)
 }
 
 pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject> {

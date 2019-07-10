@@ -1,4 +1,4 @@
-use crate::expression::{Expression, Iri, IriRefOrFunction, PrefixedName};
+use crate::expression::{Expression, Iri, IriOrFunction, PrefixedName};
 use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
@@ -10,7 +10,7 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::triple::graph_term;
+use crate::triple::{arg_list, graph_term};
 use nom::multi::fold_many0;
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
 use nom::{
@@ -68,9 +68,9 @@ pub(crate) fn sp1(i: &str) -> IResult<&str, &str> {
 }
 
 #[inline]
-pub(crate) fn sp_enc<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, &'a str>
+pub(crate) fn sp_enc<'a, O1, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, O1>
 where
-    F: Fn(&'a str) -> IResult<&'a str, &'a str>,
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
 {
     delimited(sp, pat, sp)
 }
@@ -204,11 +204,14 @@ pub(crate) fn iri(i: &str) -> IResult<&str, Iri> {
     ))(i)
 }
 
-pub(crate) fn iri_ref_or_fun(_i: &str) -> IResult<&str, IriRefOrFunction> {
-    unimplemented!()
+pub(crate) fn iri_or_fun(i: &str) -> IResult<&str, IriOrFunction> {
+    map(
+        pair(iri, opt(preceded(sp1, arg_list))),
+        |(iri, arg_list)| IriOrFunction { iri, arg_list },
+    )(i)
 }
 
-pub(crate) fn var_or_iri_ref(i: &str) -> IResult<&str, VarOrIri> {
+pub(crate) fn var_or_iri(i: &str) -> IResult<&str, VarOrIri> {
     alt((map(var, VarOrIri::Var), map(iri, VarOrIri::Iri)))(i)
 }
 

@@ -1,5 +1,5 @@
 use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri_ref,
+    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri,
     var_or_term,
 };
 use crate::query::{Var, VarOrIri};
