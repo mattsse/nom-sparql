@@ -1,4 +1,4 @@
-use crate::parser::{iri, preceded_tag, sp, sp1};
+use crate::parser::{iri, preceded_tag, sp, sp1, sp_enc};
 
 use nom::{
     branch::alt,
@@ -11,7 +11,9 @@ use nom::{
 
 use crate::expression::Iri;
 use crate::literal::silent;
-use crate::node::{graph_ref, GroupGraphPattern};
+use crate::node::{
+    graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
+};
 use crate::query::LimitOffsetClause;
 use crate::triple::{quad_data, quads_pattern, Quads};
 use nom::combinator::{map, opt};
@@ -27,12 +29,12 @@ pub struct Update {
 #[derive(Debug, Clone)]
 pub enum UpdateStatement {
     Load(LoadStatement),
-    Clear,
-    Drop,
-    Add,
-    Move,
-    Copy,
-    Create,
+    Clear(ClearStatement),
+    Drop(DropStatement),
+    Create(CreateStatement),
+    Add(AddStatement),
+    Move(MoveStatement),
+    Copy(CopyStatement),
     InsertData(Quads),
     DeleteData(Quads),
     DeleteWhere(Quads),
@@ -46,13 +48,118 @@ pub struct LoadStatement {
     pub graph_ref: Option<Iri>,
 }
 
+#[derive(Debug, Clone)]
+pub struct ClearStatement {
+    pub silent: bool,
+    pub graph_ref_all: GraphRefAll,
+}
+
+#[derive(Debug, Clone)]
+pub struct DropStatement {
+    pub silent: bool,
+    pub graph_ref_all: GraphRefAll,
+}
+
+#[derive(Debug, Clone)]
+pub struct CreateStatement {
+    pub silent: bool,
+    pub graph_ref: Iri,
+}
+
+#[derive(Debug, Clone)]
+pub struct AddStatement {
+    pub silent: bool,
+    pub from: GraphOrDefault,
+    pub to: GraphOrDefault,
+}
+
+#[derive(Debug, Clone)]
+pub struct MoveStatement {
+    pub silent: bool,
+    pub from: GraphOrDefault,
+    pub to: GraphOrDefault,
+}
+
+#[derive(Debug, Clone)]
+pub struct CopyStatement {
+    pub silent: bool,
+    pub from: GraphOrDefault,
+    pub to: GraphOrDefault,
+}
+
+pub(crate) fn add_stmt(i: &str) -> IResult<&str, AddStatement> {
+    map(
+        pair(pair(tag_no_case("add"), sp1), silent_from_to),
+        |(_, (silent, from, to))| AddStatement { silent, from, to },
+    )(i)
+}
+pub(crate) fn move_stmt(i: &str) -> IResult<&str, MoveStatement> {
+    map(
+        pair(pair(tag_no_case("move"), sp1), silent_from_to),
+        |(_, (silent, from, to))| MoveStatement { silent, from, to },
+    )(i)
+}
+
+pub(crate) fn copy_stmt(i: &str) -> IResult<&str, CopyStatement> {
+    map(
+        pair(pair(tag_no_case("copy"), sp1), silent_from_to),
+        |(_, (silent, from, to))| CopyStatement { silent, from, to },
+    )(i)
+}
+
+pub(crate) fn silent_from_to(i: &str) -> IResult<&str, (bool, GraphOrDefault, GraphOrDefault)> {
+    tuple((
+        map(opt(silent), Option::unwrap_or_default),
+        preceded(sp1, graph_or_default),
+        preceded(sp_enc(tag_no_case("to")), graph_or_default),
+    ))(i)
+}
+
+pub(crate) fn create_stmt(i: &str) -> IResult<&str, CreateStatement> {
+    map(
+        tuple((
+            pair(tag_no_case("create"), sp1),
+            map(opt(silent), Option::unwrap_or_default),
+            preceded(sp1, graph_ref),
+        )),
+        |(_, silent, graph_ref)| CreateStatement { silent, graph_ref },
+    )(i)
+}
+
+pub(crate) fn drop_stmt(i: &str) -> IResult<&str, DropStatement> {
+    map(
+        pair(pair(tag_no_case("drop"), sp1), silent_graph_ref_all),
+        |(_, (silent, graph_ref_all))| DropStatement {
+            silent,
+            graph_ref_all,
+        },
+    )(i)
+}
+
+pub(crate) fn clear_stmt(i: &str) -> IResult<&str, ClearStatement> {
+    map(
+        pair(pair(tag_no_case("clear"), sp1), silent_graph_ref_all),
+        |(_, (silent, graph_ref_all))| ClearStatement {
+            silent,
+            graph_ref_all,
+        },
+    )(i)
+}
+
+pub(crate) fn silent_graph_ref_all(i: &str) -> IResult<&str, (bool, GraphRefAll)> {
+    pair(
+        map(opt(silent), Option::unwrap_or_default),
+        preceded(sp1, graph_ref_all),
+    )(i)
+}
+
 pub(crate) fn load_stmt(i: &str) -> IResult<&str, LoadStatement> {
     map(
         tuple((
             pair(tag_no_case("load"), sp1),
-            map(opt(terminated(silent, sp1)), |s| s.unwrap_or(false)),
-            iri,
-            opt(preceded(sp1, preceded_tag("into", graph_ref))),
+            map(opt(silent), Option::unwrap_or_default),
+            preceded(sp1, iri),
+            opt(preceded(sp_enc(tag_no_case("into")), graph_ref)),
         )),
         |(_, silent, iri, graph_ref)| LoadStatement {
             iri,
