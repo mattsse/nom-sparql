@@ -2,6 +2,7 @@ use crate::node::RdfLiteral;
 use crate::query::Var;
 
 use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
+use crate::call::FunctionCall;
 use crate::literal::NumericLiteral;
 use crate::parser::{preceded_tag, sp_enc, var};
 use nom::bytes::complete::tag_no_case;
@@ -104,12 +105,6 @@ pub enum ArgList {
         first: Box<Expression>,
         further: Vec<Expression>,
     },
-}
-
-#[derive(Debug, Clone)]
-pub struct FunctionCall {
-    pub iri_ref: Iri,
-    pub args: ArgList,
 }
 
 #[derive(Debug, Clone)]
