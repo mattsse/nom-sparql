@@ -3,6 +3,10 @@ use crate::query::Var;
 
 use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
 use crate::literal::NumericLiteral;
+use crate::parser::{preceded_tag, sp_enc, var};
+use nom::bytes::complete::tag_no_case;
+use nom::combinator::map;
+use nom::sequence::separated_pair;
 use nom::IResult;
 
 #[derive(Debug, Clone)]
@@ -106,6 +110,32 @@ pub enum Constraint {
     Bracketted(Box<Expression>),
     BuiltInCall(BuiltInCall),
     FunctionCall(Box<FunctionCall>),
+}
+
+#[derive(Debug, Clone)]
+pub struct ExpressionAsVar {
+    pub expression: Box<Expression>,
+    pub var: Var,
+}
+
+pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
+    map(
+        separated_pair(expression, sp_enc(tag_no_case("as")), var),
+        |(expression, var)| ExpressionAsVar {
+            expression: Box::new(expression),
+            var,
+        },
+    )(i)
+}
+
+pub(crate) fn bind(i: &str) -> IResult<&str, ExpressionAsVar> {
+    preceded_tag("bind", expression_as_var)(i)
+}
+
+#[derive(Debug, Clone)]
+pub enum VarOrExpressionAsVar {
+    Var(Var),
+    ExpressionAsVar(ExpressionAsVar),
 }
 
 pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {

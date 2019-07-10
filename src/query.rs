@@ -1,5 +1,6 @@
 use crate::expression::{Constraint, Iri, OrderExpression};
 use crate::node::GroupGraphPattern;
+use crate::select::SelectQuery;
 use std::fmt;
 
 #[derive(Debug, Clone)]
@@ -17,18 +18,15 @@ impl fmt::Display for SparqlQuery {
 }
 
 #[derive(Debug, Clone)]
-pub struct AskQuery {
-    pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: WhereClause,
+pub struct PrefixDecl {
+    pub pname_ns: Option<String>,
+    pub iri_ref: String,
 }
 
 #[derive(Debug, Clone)]
-pub struct SelectQuery {
-    pub modifier: Option<SelectModifier>,
-    pub var_wildcard: VarWildcard,
+pub struct AskQuery {
     pub dataset_clauses: Vec<DataSetClause>,
     pub where_clause: WhereClause,
-    pub solution_modifier: SolutionModifier,
 }
 
 #[derive(Debug, Clone)]
@@ -57,12 +55,6 @@ pub struct ConstructQuery {
     pub dataset_clauses: Vec<DataSetClause>,
     pub where_clause: WhereClause,
     pub solution_modifier: SolutionModifier,
-}
-
-#[derive(Debug, Clone)]
-pub enum SelectModifier {
-    Distinct,
-    Reduced,
 }
 
 #[derive(Debug, Clone)]

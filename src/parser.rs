@@ -3,7 +3,7 @@ use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
 };
-use crate::query::{SparqlQuery, Var, VarOrIri};
+use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
@@ -12,7 +12,7 @@ use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
 use crate::triple::{arg_list, graph_term};
 use nom::multi::fold_many0;
-use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::{
     bytes::complete::take_while,
     character::{
@@ -73,6 +73,14 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O1>,
 {
     delimited(sp, pat, sp)
+}
+
+#[inline]
+pub(crate) fn sp_enc1<'a, O1, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, O1>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+{
+    delimited(sp1, pat, sp1)
 }
 
 #[inline]
@@ -182,7 +190,22 @@ pub(crate) fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
     ))(i)
 }
 
-pub(crate) fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
+pub(crate) fn base_decl(i: &str) -> IResult<&str, &str> {
+    preceded(terminated(tag_no_case("base"), sp1), iri_ref)(i)
+}
+
+pub(crate) fn prefix_decl(i: &str) -> IResult<&str, PrefixDecl> {
+    map(
+        tuple((
+            tag_no_case("prefix"),
+            sp_enc(pname_ns),
+            map(iri_ref, str::to_string),
+        )),
+        |(_, pname_ns, iri_ref)| PrefixDecl { pname_ns, iri_ref },
+    )(i)
+}
+
+pub(crate) fn iri_ref(i: &str) -> IResult<&str, &str> {
     delimited(
         tag("<"),
         take_while(|c| {
@@ -199,7 +222,7 @@ pub(crate) fn iri_ref_lex(i: &str) -> IResult<&str, &str> {
 
 pub(crate) fn iri(i: &str) -> IResult<&str, Iri> {
     alt((
-        map(iri_ref_lex, |i| Iri::Iri(i.to_string())),
+        map(iri_ref, |i| Iri::Iri(i.to_string())),
         map(prefixed_name, Iri::PrefixedName),
     ))(i)
 }
