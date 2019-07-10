@@ -1,7 +1,7 @@
 use crate::expression::Iri;
 use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{iri, nil, rdf_literal, sp, sp_enc, var};
+use crate::parser::{iri, named_iri, nil, preceded_tag, rdf_literal, sp, sp_enc, var};
 use crate::query::Var;
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
@@ -10,6 +10,12 @@ use nom::combinator::map;
 use nom::multi::many0;
 use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::IResult;
+
+#[derive(Debug, Clone)]
+pub enum DataSetClause {
+    Default(Iri),
+    Named(Iri),
+}
 
 #[derive(Debug, Clone)]
 pub enum DataBlock {
@@ -36,6 +42,16 @@ pub enum DataBlockValue {
     NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
     UnDef,
+}
+
+pub(crate) fn data_set_clause(i: &str) -> IResult<&str, DataSetClause> {
+    preceded_tag(
+        "from",
+        alt((
+            map(iri, DataSetClause::Default),
+            map(named_iri, DataSetClause::Named),
+        )),
+    )(i)
 }
 
 pub(crate) fn datablock(i: &str) -> IResult<&str, DataBlock> {

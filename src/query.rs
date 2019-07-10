@@ -1,3 +1,4 @@
+use crate::data::DataSetClause;
 use crate::expression::{Constraint, Iri, OrderExpression};
 use crate::node::GroupGraphPattern;
 use crate::select::SelectQuery;
@@ -86,17 +87,6 @@ pub enum OrderCondition {
 #[derive(Debug, Clone)]
 pub struct OffsetClause {
     pub offset: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct DataSetClause {
-    pub graph_clause: GraphClause,
-}
-
-#[derive(Debug, Clone)]
-pub enum GraphClause {
-    Default(Iri),
-    Named(Iri),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -220,6 +220,16 @@ pub(crate) fn iri_ref(i: &str) -> IResult<&str, &str> {
     )(i)
 }
 
+pub(crate) fn named_iri(i: &str) -> IResult<&str, Iri> {
+    preceded_tag(
+        "named",
+        alt((
+            map(iri_ref, |i| Iri::Iri(i.to_string())),
+            map(prefixed_name, Iri::PrefixedName),
+        )),
+    )(i)
+}
+
 pub(crate) fn iri(i: &str) -> IResult<&str, Iri> {
     alt((
         map(iri_ref, |i| Iri::Iri(i.to_string())),

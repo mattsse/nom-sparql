@@ -7,8 +7,7 @@ use crate::node::{
     TriplesNode, VarOrTerm, VerbList,
 };
 use crate::query::{
-    DataSetClause, PrefixDecl, SolutionModifier, SparqlQuery, Var, VarOrIri, VarWildcard,
-    WhereClause,
+    PrefixDecl, SolutionModifier, SparqlQuery, Var, VarOrIri, VarWildcard, WhereClause,
 };
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
@@ -16,7 +15,7 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::data::DataBlock;
+use crate::data::{DataBlock, DataSetClause};
 use crate::parser::{sp1, sp_enc, var};
 use crate::triple::{arg_list, graph_term};
 use nom::multi::{fold_many0, many1};
