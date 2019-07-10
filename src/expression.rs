@@ -5,8 +5,9 @@ use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
 use crate::literal::NumericLiteral;
 use crate::parser::{preceded_tag, sp_enc, var};
 use nom::bytes::complete::tag_no_case;
+use nom::character::complete::char;
 use nom::combinator::map;
-use nom::sequence::separated_pair;
+use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 
 #[derive(Debug, Clone)]
@@ -119,12 +120,16 @@ pub struct ExpressionAsVar {
 }
 
 pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
-    map(
-        separated_pair(expression, sp_enc(tag_no_case("as")), var),
-        |(expression, var)| ExpressionAsVar {
-            expression: Box::new(expression),
-            var,
-        },
+    delimited(
+        char('('),
+        sp_enc(map(
+            separated_pair(expression, sp_enc(tag_no_case("as")), var),
+            |(expression, var)| ExpressionAsVar {
+                expression: Box::new(expression),
+                var,
+            },
+        )),
+        char(')'),
     )(i)
 }
 

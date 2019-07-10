@@ -89,10 +89,7 @@ pub(crate) fn select_vars(i: &str) -> IResult<&str, SelectVars> {
 pub(crate) fn var_or_expression_as_var(i: &str) -> IResult<&str, VarOrExpressionAsVar> {
     alt((
         map(var, VarOrExpressionAsVar::Var),
-        map(
-            delimited(char('('), sp_enc(expression_as_var), char(')')),
-            VarOrExpressionAsVar::ExpressionAsVar,
-        ),
+        map(expression_as_var, VarOrExpressionAsVar::ExpressionAsVar),
     ))(i)
 }
 
