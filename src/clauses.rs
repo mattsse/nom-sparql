@@ -1,4 +1,4 @@
-use crate::parser::{iri, preceded_tag, sp, sp1};
+use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1};
 
 use nom::{
     branch::alt,
@@ -10,7 +10,7 @@ use nom::{
 };
 
 use crate::data::{datablock, DataBlock};
-use crate::expression::Iri;
+use crate::expression::{DefaultOrNamedIri, Iri};
 use crate::query::LimitOffsetClause;
 use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
@@ -31,8 +31,8 @@ pub(crate) fn delete_clause(i: &str) -> IResult<&str, Quads> {
 }
 
 #[inline]
-pub(crate) fn using_clause(i: &str) -> IResult<&str, Iri> {
-    preceded_tag("using", alt((preceded_tag("named", iri), iri)))(i)
+pub(crate) fn using_clause(i: &str) -> IResult<&str, DefaultOrNamedIri> {
+    preceded_tag("using", default_or_named_iri)(i)
 }
 
 #[inline]

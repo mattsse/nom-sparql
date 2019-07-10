@@ -1,4 +1,4 @@
-use crate::expression::{Expression, Iri, IriOrFunction, PrefixedName};
+use crate::expression::{DefaultOrNamedIri, Expression, Iri, IriOrFunction, PrefixedName};
 use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
@@ -228,6 +228,13 @@ pub(crate) fn named_iri(i: &str) -> IResult<&str, Iri> {
             map(prefixed_name, Iri::PrefixedName),
         )),
     )(i)
+}
+
+pub(crate) fn default_or_named_iri(i: &str) -> IResult<&str, DefaultOrNamedIri> {
+    alt((
+        map(iri, DefaultOrNamedIri::Default),
+        map(named_iri, DefaultOrNamedIri::Named),
+    ))(i)
 }
 
 pub(crate) fn iri(i: &str) -> IResult<&str, Iri> {

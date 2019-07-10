@@ -74,6 +74,12 @@ pub enum PrefixedName {
 }
 
 #[derive(Debug, Clone)]
+pub enum DefaultOrNamedIri {
+    Default(Iri),
+    Named(Iri),
+}
+
+#[derive(Debug, Clone)]
 pub struct IriOrFunction {
     pub iri: Iri,
     pub arg_list: Option<ArgList>,
