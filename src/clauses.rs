@@ -32,16 +32,6 @@ pub struct SolutionModifier {
 pub struct HavingClause(pub Vec<Constraint>);
 
 #[derive(Debug, Clone)]
-pub struct LimitClause {
-    pub limit: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct OffsetClause {
-    pub offset: usize,
-}
-
-#[derive(Debug, Clone)]
 pub struct OrderClause(pub Vec<OrderCondition>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
