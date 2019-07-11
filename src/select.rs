@@ -3,22 +3,21 @@ use crate::expression::{
     VarOrExpressionAsVar,
 };
 use crate::node::{
-    Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
-    TriplesNode, VarOrTerm, VerbList,
+    Collection, GraphNode, GraphTerm, GroupGraphPattern, ObjectList, PropertyList, RdfLiteral,
+    RdfLiteralDescriptor, TriplesNode, VarOrTerm, VerbList,
 };
-use crate::query::{
-    PrefixDecl, SolutionModifier, SparqlQuery, Var, VarOrIri, VarWildcard, WhereClause,
-};
+use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri, VarWildcard};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
-use crate::data::{DataBlock, DataSetClause};
-use crate::parser::{sp1, sp_enc, var};
+use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
+use crate::data::{data_set_clause, DataBlock, DataSetClause};
+use crate::parser::{sp, sp1, sp_enc, sp_enc1, var};
 use crate::triple::{arg_list, graph_term};
-use nom::multi::{fold_many0, many1};
+use nom::multi::{fold_many0, many1, separated_list};
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::{
     bytes::complete::take_while,
@@ -34,14 +33,14 @@ use nom::{
 pub struct SelectQuery {
     pub select_clause: SelectClause,
     pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: WhereClause,
+    pub where_clause: GroupGraphPattern,
     pub solution_modifier: SolutionModifier,
 }
 
 #[derive(Debug, Clone)]
 pub struct SubSelect {
     pub select_clause: SelectClause,
-    pub where_clause: WhereClause,
+    pub where_clause: GroupGraphPattern,
     pub solution_modifier: SolutionModifier,
     pub values_clause: Option<DataBlock>,
 }
@@ -62,6 +61,23 @@ pub enum SelectVars {
 pub enum SelectModifier {
     Distinct,
     Reduced,
+}
+
+pub(crate) fn select_query(i: &str) -> IResult<&str, SelectQuery> {
+    map(
+        tuple((
+            terminated(select_clause, sp1),
+            separated_list(sp, data_set_clause),
+            sp_enc(where_clause),
+            solution_modifier,
+        )),
+        |(select_clause, dataset_clauses, where_clause, solution_modifier)| SelectQuery {
+            select_clause,
+            dataset_clauses,
+            where_clause,
+            solution_modifier,
+        },
+    )(i)
 }
 
 pub(crate) fn select_clause(i: &str) -> IResult<&str, SelectClause> {

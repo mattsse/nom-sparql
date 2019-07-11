@@ -136,10 +136,7 @@ pub(crate) fn property_list_path_not_empty(i: &str) -> IResult<&str, PropertyLis
         (tuple((
             terminated(verb_path_or_simple, sp1),
             object_list_path,
-            many0(preceded(
-                take_while1(|c| c == ';'),
-                property_list_path_entry,
-            )),
+            many0(preceded(many1(sp_enc(char(';'))), property_list_path_entry)),
         ))),
         |(verb_path_or_simple, object_list_path, entries)| PropertyListPath {
             verb_path_or_simple,

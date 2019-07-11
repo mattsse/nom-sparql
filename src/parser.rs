@@ -3,7 +3,7 @@ use crate::node::{
     Collection, GraphNode, GraphTerm, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor,
     TriplesNode, VarOrTerm, VerbList,
 };
-use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri};
+use crate::query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, Var, VarOrIri};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
@@ -11,7 +11,7 @@ use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
 
 use crate::triple::{arg_list, graph_term};
-use nom::multi::fold_many0;
+use nom::multi::{fold_many0, separated_list};
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::{
     bytes::complete::take_while,
@@ -202,6 +202,19 @@ pub(crate) fn prefix_decl(i: &str) -> IResult<&str, PrefixDecl> {
             map(iri_ref, str::to_string),
         )),
         |(_, pname_ns, iri_ref)| PrefixDecl { pname_ns, iri_ref },
+    )(i)
+}
+
+pub(crate) fn prologue(i: &str) -> IResult<&str, Prologue> {
+    map(
+        separated_list(
+            sp,
+            alt((
+                map(base_decl, |s| BaseOrPrefixDecl::Base(s.to_string())),
+                map(prefix_decl, BaseOrPrefixDecl::Prefix),
+            )),
+        ),
+        Prologue,
     )(i)
 }
 

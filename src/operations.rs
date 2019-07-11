@@ -14,7 +14,6 @@ use crate::literal::silent;
 use crate::node::{
     graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
 };
-use crate::query::LimitOffsetClause;
 use crate::triple::{quad_data, quads_pattern, Quads};
 use nom::combinator::{map, opt};
 use nom::sequence::{pair, separated_pair, tuple};

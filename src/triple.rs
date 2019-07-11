@@ -184,7 +184,7 @@ pub(crate) fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
 }
 
 pub(crate) fn triples_template(i: &str) -> IResult<&str, TriplesTemplate> {
-    separated_nonempty_list(many1(char('.')), triples_same_subject)(i)
+    separated_nonempty_list(many1(sp_enc(char('.'))), triples_same_subject)(i)
 }
 
 pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject> {

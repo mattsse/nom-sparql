@@ -2,13 +2,13 @@ use crate::node::RdfLiteral;
 use crate::query::Var;
 
 use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
-use crate::call::FunctionCall;
+use crate::call::{BuiltInCall, FunctionCall};
 use crate::literal::NumericLiteral;
-use crate::parser::{preceded_tag, sp_enc, var};
+use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::char;
-use nom::combinator::map;
-use nom::sequence::{delimited, separated_pair};
+use nom::combinator::{map, opt};
+use nom::sequence::{delimited, pair, preceded, separated_pair};
 use nom::IResult;
 
 #[derive(Debug, Clone)]
@@ -23,27 +23,6 @@ pub enum PrimaryExpression {
     NumericLiteral,
     BooleanLiteral(bool),
     Var,
-}
-
-#[derive(Debug, Clone)]
-pub enum BuiltInCall {
-    Str(Box<Expression>),
-    Lang(Box<Expression>),
-    LangMatches {
-        first: Box<Expression>,
-        second: Box<Expression>,
-    },
-    Datatype(Box<Expression>),
-    Bound(Var),
-    SameTerm {
-        first: Box<Expression>,
-        second: Box<Expression>,
-    },
-    IsIri(Box<Expression>),
-    IsUri(Box<Expression>),
-    IsBlank(Box<Expression>),
-    IsLiteral(Box<Expression>),
-    Regex(Box<RegexExpression>),
 }
 
 #[derive(Debug, Clone)]
@@ -120,6 +99,29 @@ pub struct ExpressionAsVar {
     pub var: Var,
 }
 
+#[derive(Debug, Clone)]
+pub struct ExpressionAsVarOpt {
+    pub expression: Box<Expression>,
+    pub var: Option<Var>,
+}
+
+pub(crate) fn constraint(i: &str) -> IResult<&str, Constraint> {
+    unimplemented!()
+}
+
+pub(crate) fn expression_as_var_opt(i: &str) -> IResult<&str, ExpressionAsVarOpt> {
+    delimited(
+        char('('),
+        sp_enc(map(
+            pair(expression, opt(preceded(sp_enc1(tag_no_case("as")), var))),
+            |(expression, var)| ExpressionAsVarOpt {
+                expression: Box::new(expression),
+                var,
+            },
+        )),
+        char(')'),
+    )(i)
+}
 pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
     delimited(
         char('('),
@@ -145,9 +147,5 @@ pub enum VarOrExpressionAsVar {
 }
 
 pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
-    unimplemented!()
-}
-
-pub(crate) fn function_call(i: &str) -> IResult<&str, FunctionCall> {
     unimplemented!()
 }

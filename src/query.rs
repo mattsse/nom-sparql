@@ -1,3 +1,4 @@
+use crate::clauses::SolutionModifier;
 use crate::data::DataSetClause;
 use crate::expression::{Constraint, Iri, OrderExpression};
 use crate::node::GroupGraphPattern;
@@ -27,14 +28,14 @@ pub struct PrefixDecl {
 #[derive(Debug, Clone)]
 pub struct AskQuery {
     pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: WhereClause,
+    pub where_clause: GroupGraphPattern,
 }
 
 #[derive(Debug, Clone)]
 pub struct DescribeQuery {
     pub dataset_clauses: Vec<DataSetClause>,
     pub var_iri_ref_wildcard: VarIriRefWildcard,
-    pub where_clause: Option<WhereClause>,
+    pub where_clause: Option<GroupGraphPattern>,
     pub solution_modifier: SolutionModifier,
 }
 
@@ -54,28 +55,12 @@ pub enum VarWildcard {
 pub struct ConstructQuery {
     pub construct_template: ConstructTemplate,
     pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: WhereClause,
+    pub where_clause: GroupGraphPattern,
     pub solution_modifier: SolutionModifier,
 }
 
 #[derive(Debug, Clone)]
-pub struct SolutionModifier {
-    pub order_by: Option<OrderClause>,
-    pub limit_offset_clause: Option<LimitOffsetClause>,
-}
-
-#[derive(Debug, Clone)]
-pub struct LimitClause {
-    pub limit: usize,
-}
-
-#[derive(Debug, Clone)]
 pub struct ConstructTemplate {}
-
-#[derive(Debug, Clone)]
-pub struct OrderClause {
-    pub condition: Vec<OrderCondition>,
-}
 
 #[derive(Debug, Clone)]
 pub enum OrderCondition {
@@ -85,32 +70,13 @@ pub enum OrderCondition {
 }
 
 #[derive(Debug, Clone)]
-pub struct OffsetClause {
-    pub offset: usize,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum LimitOffsetClause {
-    LimitOffset { limit: u64, offset: Option<u64> },
-    OffsetLimit { offset: u64, limit: Option<u64> },
-}
-
-impl LimitOffsetClause {
-    pub fn limit_offset(limit: u64, offset: Option<u64>) -> Self {
-        LimitOffsetClause::LimitOffset { limit, offset }
-    }
-    pub fn offset_limit(offset: u64, limit: Option<u64>) -> Self {
-        LimitOffsetClause::OffsetLimit { offset, limit }
-    }
-}
+pub struct Prologue(pub Vec<BaseOrPrefixDecl>);
 
 #[derive(Debug, Clone)]
-pub struct WhereClause {
-    pub group_graph_pattern: GroupGraphPattern,
+pub enum BaseOrPrefixDecl {
+    Base(String),
+    Prefix(PrefixDecl),
 }
-
-#[derive(Debug, Clone)]
-pub struct Prolog {}
 
 #[derive(Debug, Clone)]
 pub enum VarOrIri {

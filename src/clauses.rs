@@ -10,11 +10,77 @@ use nom::{
 };
 
 use crate::data::{datablock, DataBlock};
-use crate::expression::{DefaultOrNamedIri, Iri};
-use crate::query::LimitOffsetClause;
+use crate::expression::{constraint, Constraint, DefaultOrNamedIri, Iri};
+use crate::graph::group_graph_pattern;
+use crate::group::GroupClause;
+use crate::node::GroupGraphPattern;
+use crate::query::OrderCondition;
 use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
+use nom::multi::separated_nonempty_list;
 use nom::sequence::separated_pair;
+
+#[derive(Debug, Clone)]
+pub struct SolutionModifier {
+    pub order_by: Option<OrderClause>,
+    pub group_by: Option<GroupClause>,
+    pub having: Option<HavingClause>,
+    pub limit_offset_clause: Option<Vec<LimitOffsetClause>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct HavingClause(pub Vec<Constraint>);
+
+#[derive(Debug, Clone)]
+pub struct LimitClause {
+    pub limit: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct OffsetClause {
+    pub offset: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct OrderClause {
+    pub condition: Vec<OrderCondition>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum LimitOffsetClause {
+    LimitOffset { limit: u64, offset: Option<u64> },
+    OffsetLimit { offset: u64, limit: Option<u64> },
+}
+
+impl LimitOffsetClause {
+    pub fn limit_offset(limit: u64, offset: Option<u64>) -> Self {
+        LimitOffsetClause::LimitOffset { limit, offset }
+    }
+    pub fn offset_limit(offset: u64, limit: Option<u64>) -> Self {
+        LimitOffsetClause::OffsetLimit { offset, limit }
+    }
+}
+
+pub(crate) fn solution_modifier(i: &str) -> IResult<&str, SolutionModifier> {
+    unimplemented!()
+}
+
+pub(crate) fn having_clause(i: &str) -> IResult<&str, HavingClause> {
+    map(
+        preceded(
+            terminated(tag_no_case("having"), sp1),
+            separated_nonempty_list(sp, constraint),
+        ),
+        HavingClause,
+    )(i)
+}
+
+pub(crate) fn where_clause(i: &str) -> IResult<&str, GroupGraphPattern> {
+    preceded(
+        opt(terminated(tag_no_case("where"), sp1)),
+        group_graph_pattern,
+    )(i)
+}
 
 pub(crate) fn values_clause(i: &str) -> IResult<&str, Option<DataBlock>> {
     opt(preceded_tag("values", datablock))(i)
