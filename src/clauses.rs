@@ -12,20 +12,20 @@ use nom::{
 use crate::data::{datablock, DataBlock};
 use crate::expression::{constraint, Constraint, DefaultOrNamedIri, Iri};
 use crate::graph::group_graph_pattern;
-use crate::group::GroupClause;
+use crate::group::{group_clause, GroupClause};
 use crate::node::GroupGraphPattern;
-use crate::query::OrderCondition;
+use crate::order::{order_condition, OrderCondition};
 use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
 use nom::multi::separated_nonempty_list;
-use nom::sequence::separated_pair;
+use nom::sequence::{delimited, separated_pair, tuple};
 
 #[derive(Debug, Clone)]
 pub struct SolutionModifier {
     pub order_by: Option<OrderClause>,
     pub group_by: Option<GroupClause>,
     pub having: Option<HavingClause>,
-    pub limit_offset_clause: Option<Vec<LimitOffsetClause>>,
+    pub limit_offset: Option<LimitOffsetClause>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,9 +42,7 @@ pub struct OffsetClause {
 }
 
 #[derive(Debug, Clone)]
-pub struct OrderClause {
-    pub condition: Vec<OrderCondition>,
-}
+pub struct OrderClause(pub Vec<OrderCondition>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum LimitOffsetClause {
@@ -62,7 +60,30 @@ impl LimitOffsetClause {
 }
 
 pub(crate) fn solution_modifier(i: &str) -> IResult<&str, SolutionModifier> {
-    unimplemented!()
+    map(
+        tuple((
+            opt(group_clause),
+            opt(preceded(sp, having_clause)),
+            opt(preceded(sp, order_clause)),
+            opt(preceded(sp, limit_offset_clause)),
+        )),
+        |(group_by, having, order_by, limit_offset)| SolutionModifier {
+            group_by,
+            having,
+            order_by,
+            limit_offset,
+        },
+    )(i)
+}
+
+pub(crate) fn order_clause(i: &str) -> IResult<&str, OrderClause> {
+    map(
+        preceded(
+            terminated(delimited(tag_no_case("order"), sp1, tag_no_case("by")), sp1),
+            separated_nonempty_list(sp, order_condition),
+        ),
+        OrderClause,
+    )(i)
 }
 
 pub(crate) fn having_clause(i: &str) -> IResult<&str, HavingClause> {

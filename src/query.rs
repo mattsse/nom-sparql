@@ -1,6 +1,6 @@
 use crate::clauses::SolutionModifier;
 use crate::data::DataSetClause;
-use crate::expression::{Constraint, Iri, OrderExpression};
+use crate::expression::{Constraint, Iri};
 use crate::node::GroupGraphPattern;
 use crate::select::SelectQuery;
 use std::fmt;
@@ -61,13 +61,6 @@ pub struct ConstructQuery {
 
 #[derive(Debug, Clone)]
 pub struct ConstructTemplate {}
-
-#[derive(Debug, Clone)]
-pub enum OrderCondition {
-    Order(Box<OrderExpression>),
-    Constraint(Box<Constraint>),
-    Var(Var),
-}
 
 #[derive(Debug, Clone)]
 pub struct Prologue(pub Vec<BaseOrPrefixDecl>);

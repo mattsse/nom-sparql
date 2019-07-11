@@ -17,7 +17,7 @@ use crate::expression::{
 };
 use crate::graph::group_graph_pattern;
 use crate::node::GroupGraphPattern;
-use crate::query::{OrderCondition, Var};
+use crate::query::Var;
 use crate::triple::{quads_pattern, Quads};
 use nom::combinator::{map, opt};
 use nom::multi::separated_nonempty_list;

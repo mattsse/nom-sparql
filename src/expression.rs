@@ -66,18 +66,6 @@ pub struct IriOrFunction {
 }
 
 #[derive(Debug, Clone)]
-pub enum Order {
-    Asc,
-    Desc,
-}
-
-#[derive(Debug, Clone)]
-pub struct OrderExpression {
-    pub order: Order,
-    pub expression: Expression,
-}
-
-#[derive(Debug, Clone)]
 pub enum ArgList {
     Nil,
     Expression {
@@ -136,10 +124,6 @@ pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
     )(i)
 }
 
-pub(crate) fn bind(i: &str) -> IResult<&str, ExpressionAsVar> {
-    preceded_tag("bind", expression_as_var)(i)
-}
-
 #[derive(Debug, Clone)]
 pub enum VarOrExpressionAsVar {
     Var(Var),
@@ -148,4 +132,8 @@ pub enum VarOrExpressionAsVar {
 
 pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
     unimplemented!()
+}
+
+pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
+    delimited(char('('), sp_enc(expression), char(')'))(i)
 }

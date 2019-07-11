@@ -17,6 +17,7 @@ pub mod keywords;
 pub mod literal;
 pub mod node;
 pub mod operations;
+pub mod order;
 pub mod parser;
 pub mod path;
 pub mod query;
