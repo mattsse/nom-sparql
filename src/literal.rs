@@ -82,12 +82,10 @@ pub(crate) fn sparql_int(i: &str) -> IResult<&str, i64> {
                 .map_or_else(|| false, |c| ".eE".contains(c))
             {
                 Err(Err::Error(make_error(i, ErrorKind::Float)))
+            } else if let Ok(v) = o.parse() {
+                Ok((i, v))
             } else {
-                if let Ok(v) = o.parse() {
-                    Ok((i, v))
-                } else {
-                    Err(Err::Error(make_error(i, ErrorKind::Digit)))
-                }
+                Err(Err::Error(make_error(i, ErrorKind::Digit)))
             }
         }
         Err(e) => Err(e),

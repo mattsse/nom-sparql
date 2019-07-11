@@ -1,24 +1,24 @@
 use nom::{
-    multi::separated_nonempty_list,
-    combinator::{map, opt},
-    sequence::{delimited, separated_pair, tuple},
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
     character::is_digit,
     combinator::map_res,
+    combinator::{map, opt},
+    multi::separated_nonempty_list,
+    sequence::{delimited, separated_pair, tuple},
     sequence::{preceded, terminated},
-    IResult
+    IResult,
 };
 
 use crate::{
-    expression::{constraint, Constraint, DefaultOrNamedIri},
     data::{datablock, DataBlock},
+    expression::{constraint, Constraint, DefaultOrNamedIri},
     graph::group_graph_pattern,
     graph::GroupGraphPattern,
     group::{group_clause, GroupClause},
     order::{order_condition, OrderCondition},
     parser::{default_or_named_iri, preceded_tag, sp, sp1},
-    triple::{quads_pattern, Quads}
+    triple::{quads_pattern, Quads},
 };
 
 #[derive(Debug, Clone)]

@@ -267,14 +267,12 @@ pub(crate) fn iri_or_a_or_caret(i: &str) -> IResult<&str, IriOrAOrCaret> {
 }
 
 pub(crate) fn path_mod(i: &str) -> IResult<&str, PathMod> {
-    if i.len() == 0 {
+    if i.is_empty() {
         Err(Err::Incomplete(Needed::Size(1)))
+    } else if let Ok(path) = PathMod::from_str(&i[0..1]) {
+        Ok((&i[1..], path))
     } else {
-        if let Ok(path) = PathMod::from_str(&i[0..1]) {
-            Ok((&i[1..], path))
-        } else {
-            Err(Err::Error((i, ErrorKind::Char)))
-        }
+        Err(Err::Error((i, ErrorKind::Char)))
     }
 }
 

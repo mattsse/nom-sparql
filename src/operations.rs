@@ -36,7 +36,7 @@ pub enum UpdateStatement {
     InsertData(Quads),
     DeleteData(Quads),
     DeleteWhere(Quads),
-    Modify(ModifyStatement),
+    Modify(Box<ModifyStatement>),
 }
 
 #[derive(Debug, Clone)]
