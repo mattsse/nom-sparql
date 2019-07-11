@@ -1,5 +1,5 @@
 use nom::combinator::{map, opt};
-use nom::sequence::{pair, separated_pair, tuple};
+use nom::sequence::{pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -14,8 +14,8 @@ use crate::graph::{
     graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
 };
 use crate::literal::silent;
-use crate::parser::{iri, preceded_tag, sp, sp1, sp_enc};
-use crate::triple::{quad_data, quads_pattern, Quads};
+use crate::parser::{iri, preceded_tag, sp1, sp_enc};
+use crate::triple::{quad_data, Quads};
 
 #[derive(Debug, Clone)]
 pub struct Update {

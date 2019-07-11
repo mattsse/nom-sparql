@@ -1,7 +1,6 @@
-use nom::character::complete::{alpha1, digit0, none_of};
-use nom::combinator::{cut, not, opt, recognize};
+use nom::combinator::{cut, opt, recognize};
 use nom::error::{make_error, ErrorKind};
-use nom::sequence::{pair, separated_pair, tuple};
+use nom::sequence::{pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -146,14 +145,14 @@ mod tests {
     #[test]
     fn is_numeric_literal_double() {
         let mut expected = numeric_literal("+11.").unwrap();
-        if let NumericLiteral::Double((d, e)) = expected.1 {
+        if let NumericLiteral::Double((_d, e)) = expected.1 {
             assert!(e.is_none());
         } else {
             panic!("double literal mistaken for int {:?}", expected.1)
         }
 
         expected = numeric_literal("+.0e10").unwrap();
-        if let NumericLiteral::Double((d, e)) = expected.1 {
+        if let NumericLiteral::Double((_d, e)) = expected.1 {
             assert_eq!(e, Some(10));
         } else {
             panic!("double literal mistaken for int {:?}", expected.1)

@@ -9,9 +9,7 @@ use nom::IResult;
 use crate::expression::{DefaultOrNamedIri, Iri};
 use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{
-    default_or_named_iri, iri, named_iri, nil, preceded_tag, rdf_literal, sp, sp_enc, var,
-};
+use crate::parser::{default_or_named_iri, iri, nil, preceded_tag, rdf_literal, sp, sp_enc, var};
 use crate::query::Var;
 
 pub type DataSetClause = DefaultOrNamedIri;

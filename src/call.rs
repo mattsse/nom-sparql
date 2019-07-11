@@ -1,14 +1,7 @@
-use nom::bytes::complete::tag_no_case;
-use nom::character::complete::char;
-use nom::combinator::map;
-use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 
-use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
 use crate::expression::{ArgList, Expression, Iri, RegexExpression};
-use crate::literal::NumericLiteral;
-use crate::node::RdfLiteral;
-use crate::parser::{preceded_tag, sp_enc, var};
+
 use crate::query::Var;
 
 #[derive(Debug, Clone)]
@@ -38,10 +31,10 @@ pub enum BuiltInCall {
     Regex(Box<RegexExpression>),
 }
 
-pub(crate) fn function_call(i: &str) -> IResult<&str, FunctionCall> {
+pub(crate) fn function_call(_i: &str) -> IResult<&str, FunctionCall> {
     unimplemented!()
 }
 
-pub(crate) fn built_in_call(i: &str) -> IResult<&str, BuiltInCall> {
+pub(crate) fn built_in_call(_i: &str) -> IResult<&str, BuiltInCall> {
     unimplemented!()
 }

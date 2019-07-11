@@ -119,7 +119,7 @@ pub(crate) fn graph_ref_all(i: &str) -> IResult<&str, GraphRefAll> {
 #[derive(Debug, Clone)]
 pub struct GroupGraphPatternSub {}
 
-pub(crate) fn group_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {
+pub(crate) fn group_graph_pattern(_i: &str) -> IResult<&str, GroupGraphPattern> {
     unimplemented!()
 }
 

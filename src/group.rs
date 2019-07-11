@@ -1,6 +1,6 @@
-use nom::combinator::{map, opt};
+use nom::combinator::map;
 use nom::multi::separated_nonempty_list;
-use nom::sequence::{delimited, separated_pair, tuple};
+use nom::sequence::delimited;
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -11,16 +11,14 @@ use nom::{
 };
 
 use crate::call::{built_in_call, function_call, BuiltInCall, FunctionCall};
-use crate::data::{datablock, DataBlock};
+
 use crate::expression::{
     constraint, expression_as_var_opt, Constraint, DefaultOrNamedIri, ExpressionAsVar,
     ExpressionAsVarOpt, Iri,
 };
-use crate::graph::group_graph_pattern;
-use crate::graph::GroupGraphPattern;
-use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1, var};
+
+use crate::parser::{sp, sp1, var};
 use crate::query::Var;
-use crate::triple::{quads_pattern, Quads};
 
 #[derive(Debug, Clone)]
 pub struct GroupClause(pub Vec<GroupCondition>);

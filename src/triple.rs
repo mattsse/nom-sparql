@@ -1,4 +1,4 @@
-use nom::character::complete::{char, space1};
+use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::multi::{many0, many1, separated_nonempty_list};
 use nom::sequence::{delimited, pair, separated_pair, tuple};
@@ -13,13 +13,11 @@ use nom::{
 
 use crate::expression::ArgList;
 use crate::graph::graph_node;
-use crate::literal::{boolean, numeric_literal};
+
 use crate::node::{
-    BlankNode, Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
+    Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
 };
-use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term,
-};
+use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
 use crate::query::VarOrIri;
 
 #[derive(Clone, Debug)]

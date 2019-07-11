@@ -1,7 +1,7 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
 use nom::combinator::map;
-use nom::sequence::{pair, separated_pair};
+use nom::sequence::separated_pair;
 use nom::IResult;
 
 use crate::expression::{bracketted_expression, constraint, Constraint, Expression};

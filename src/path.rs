@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use nom::bits::streaming::take;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::error::ErrorKind;
@@ -22,8 +21,8 @@ use crate::parser::{
     anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri,
     var_or_term,
 };
-use crate::query::{Var, VarOrIri};
-use crate::triple::{object_list, property_list_not_empty, Verb};
+use crate::query::Var;
+use crate::triple::object_list;
 
 #[derive(Debug, Clone)]
 pub enum GraphNodePath {
@@ -134,11 +133,11 @@ pub(crate) fn blank_node_property_list_path(i: &str) -> IResult<&str, PropertyLi
 
 pub(crate) fn property_list_path_not_empty(i: &str) -> IResult<&str, PropertyListPath> {
     map(
-        (tuple((
+        tuple((
             terminated(verb_path_or_simple, sp1),
             object_list_path,
             many0(preceded(many1(sp_enc(char(';'))), property_list_path_entry)),
-        ))),
+        )),
         |(verb_path_or_simple, object_list_path, entries)| PropertyListPath {
             verb_path_or_simple,
             object_list_path,

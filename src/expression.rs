@@ -4,11 +4,11 @@ use nom::combinator::{map, opt};
 use nom::sequence::{delimited, pair, preceded, separated_pair};
 use nom::IResult;
 
-use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
+use crate::arithmetic::ConditionalOrExpression;
 use crate::call::{BuiltInCall, FunctionCall};
-use crate::literal::NumericLiteral;
+
 use crate::node::RdfLiteral;
-use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
+use crate::parser::{sp_enc, sp_enc1, var};
 use crate::query::Var;
 
 #[derive(Debug, Clone)]
@@ -93,7 +93,7 @@ pub struct ExpressionAsVarOpt {
     pub var: Option<Var>,
 }
 
-pub(crate) fn constraint(i: &str) -> IResult<&str, Constraint> {
+pub(crate) fn constraint(_i: &str) -> IResult<&str, Constraint> {
     unimplemented!()
 }
 

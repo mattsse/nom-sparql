@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::clauses::SolutionModifier;
 use crate::data::DataSetClause;
-use crate::expression::{Constraint, Iri};
+use crate::expression::Iri;
 use crate::graph::GroupGraphPattern;
 use crate::select::SelectQuery;
 

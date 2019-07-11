@@ -1,15 +1,8 @@
-use nom::branch::alt;
-use nom::bytes::complete::{tag, tag_no_case};
-use nom::combinator::{map, opt};
-use nom::sequence::{delimited, pair, preceded, terminated};
-use nom::IResult;
-
-use crate::expression::{Constraint, Iri};
+use crate::expression::Iri;
 use crate::graph::{GraphNode, GraphTerm};
-use crate::literal::NumericLiteral;
-use crate::parser::{iri, sp, sp1, sp_sep1};
-use crate::query::{Var, VarOrIri};
-use crate::triple::{property_list, property_list_not_empty, TriplesBlock, Verb};
+
+use crate::query::Var;
+use crate::triple::Verb;
 
 #[derive(Debug, Clone)]
 pub enum VarOrTerm {

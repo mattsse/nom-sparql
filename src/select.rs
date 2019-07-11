@@ -2,17 +2,9 @@ use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
-use nom::multi::{fold_many0, many1, separated_list};
+use nom::multi::{many1, separated_list};
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
-use nom::{
-    bytes::complete::take_while,
-    character::{
-        complete::{alpha1, alphanumeric1},
-        is_alphabetic,
-    },
-    error::ErrorKind,
-    AsChar, Err, IResult,
-};
+use nom::IResult;
 
 use crate::clauses::{solution_modifier, values_clause, where_clause, SolutionModifier};
 use crate::data::{data_set_clause, DataBlock, DataSetClause};
@@ -21,13 +13,8 @@ use crate::expression::{
     VarOrExpressionAsVar,
 };
 use crate::graph::GroupGraphPattern;
-use crate::node::{
-    Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
-    VerbList,
-};
-use crate::parser::{sp, sp1, sp_enc, sp_enc1, var};
-use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri, VarWildcard};
-use crate::triple::arg_list;
+
+use crate::parser::{sp, sp1, sp_enc, var};
 
 #[derive(Debug, Clone)]
 pub struct SelectQuery {

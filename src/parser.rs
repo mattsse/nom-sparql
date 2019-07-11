@@ -14,7 +14,7 @@ use nom::{
     AsChar, Err, IResult,
 };
 
-use crate::expression::{DefaultOrNamedIri, Expression, Iri, IriOrFunction, PrefixedName};
+use crate::expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName};
 use crate::graph::graph_term;
 use crate::node::{
     Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
