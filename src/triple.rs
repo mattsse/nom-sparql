@@ -1,8 +1,7 @@
-use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term,
-};
-use crate::query::VarOrIri;
-
+use nom::character::complete::{char, space1};
+use nom::combinator::{map, opt};
+use nom::multi::{many0, many1, separated_nonempty_list};
+use nom::sequence::{delimited, pair, separated_pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -13,16 +12,15 @@ use nom::{
 };
 
 use crate::expression::ArgList;
-use crate::node::{
-    BlankNode, Collection, GraphNode, GraphTerm, ObjectList, PropertyList, TriplesNode,
-    TriplesSameSubject, VerbList,
-};
-
+use crate::graph::graph_node;
 use crate::literal::{boolean, numeric_literal};
-use nom::character::complete::{char, space1};
-use nom::combinator::{map, opt};
-use nom::multi::{many0, many1, separated_nonempty_list};
-use nom::sequence::{delimited, pair, separated_pair, tuple};
+use crate::node::{
+    BlankNode, Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
+};
+use crate::parser::{
+    anon, iri, nil, pn_local, rdf_literal, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term,
+};
+use crate::query::VarOrIri;
 
 #[derive(Clone, Debug)]
 pub enum Verb {
@@ -106,33 +104,6 @@ pub(crate) fn quads_entry(i: &str) -> IResult<&str, QuadsEntry> {
 
 pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
     unimplemented!()
-}
-
-pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
-    alt((
-        map(iri, GraphTerm::IriRef),
-        map(rdf_literal, GraphTerm::RdfLiteral),
-        map(numeric_literal, GraphTerm::NumericLiteral),
-        map(boolean, GraphTerm::BooleanLiteral),
-        map(blank_node, GraphTerm::BlankNode),
-        map(nil, |_| GraphTerm::Nil),
-    ))(i)
-}
-
-pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
-    alt((
-        map(sp_sep1(tag("_:"), pn_local), |(_, label)| {
-            BlankNode::Label(label)
-        }),
-        map(anon, |_| BlankNode::Anon),
-    ))(i)
-}
-
-pub(crate) fn graph_node(i: &str) -> IResult<&str, GraphNode> {
-    alt((
-        map(var_or_term, GraphNode::VarOrTerm),
-        map(triples_node, |node| GraphNode::TriplesNode(Box::new(node))),
-    ))(i)
 }
 
 #[inline]

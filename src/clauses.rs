@@ -1,5 +1,6 @@
-use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1};
-
+use nom::combinator::{map, opt};
+use nom::multi::separated_nonempty_list;
+use nom::sequence::{delimited, separated_pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -12,13 +13,11 @@ use nom::{
 use crate::data::{datablock, DataBlock};
 use crate::expression::{constraint, Constraint, DefaultOrNamedIri, Iri};
 use crate::graph::group_graph_pattern;
+use crate::graph::GroupGraphPattern;
 use crate::group::{group_clause, GroupClause};
-use crate::node::GroupGraphPattern;
 use crate::order::{order_condition, OrderCondition};
+use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1};
 use crate::triple::{quads_pattern, Quads};
-use nom::combinator::{map, opt};
-use nom::multi::separated_nonempty_list;
-use nom::sequence::{delimited, separated_pair, tuple};
 
 #[derive(Debug, Clone)]
 pub struct SolutionModifier {

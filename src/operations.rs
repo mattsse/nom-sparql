@@ -1,5 +1,5 @@
-use crate::parser::{iri, preceded_tag, sp, sp1, sp_enc};
-
+use nom::combinator::{map, opt};
+use nom::sequence::{pair, separated_pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -10,13 +10,12 @@ use nom::{
 };
 
 use crate::expression::Iri;
-use crate::literal::silent;
-use crate::node::{
+use crate::graph::{
     graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
 };
+use crate::literal::silent;
+use crate::parser::{iri, preceded_tag, sp, sp1, sp_enc};
 use crate::triple::{quad_data, quads_pattern, Quads};
-use nom::combinator::{map, opt};
-use nom::sequence::{pair, separated_pair, tuple};
 
 #[derive(Debug, Clone)]
 pub struct Update {
@@ -84,6 +83,23 @@ pub struct CopyStatement {
     pub silent: bool,
     pub from: GraphOrDefault,
     pub to: GraphOrDefault,
+}
+
+#[derive(Debug, Clone)]
+pub struct ModifyStatement {
+    pub iri: Option<Iri>,
+    pub delete_insert: Option<DeleteInsert>,
+    pub using_clauses: Vec<Iri>,
+    pub where_group_graph: GroupGraphPattern,
+}
+
+#[derive(Debug, Clone)]
+pub enum DeleteInsert {
+    DeleteInsert {
+        delete: Quads,
+        insert: Option<Quads>,
+    },
+    Insert(Quads),
 }
 
 pub(crate) fn add_stmt(i: &str) -> IResult<&str, AddStatement> {
@@ -166,23 +182,6 @@ pub(crate) fn load_stmt(i: &str) -> IResult<&str, LoadStatement> {
             graph_ref,
         },
     )(i)
-}
-
-#[derive(Debug, Clone)]
-pub struct ModifyStatement {
-    pub iri: Option<Iri>,
-    pub delete_insert: Option<DeleteInsert>,
-    pub using_clauses: Vec<Iri>,
-    pub where_group_graph: GroupGraphPattern,
-}
-
-#[derive(Debug, Clone)]
-pub enum DeleteInsert {
-    DeleteInsert {
-        delete: Quads,
-        insert: Option<Quads>,
-    },
-    Insert(Quads),
 }
 
 pub(crate) fn insert_data(i: &str) -> IResult<&str, Quads> {

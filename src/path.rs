@@ -1,12 +1,5 @@
-use crate::parser::{
-    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri,
-    var_or_term,
-};
-use crate::query::{Var, VarOrIri};
+use std::str::FromStr;
 
-use crate::expression::Iri;
-use crate::node::{ObjectList, VarOrTerm};
-use crate::triple::{object_list, property_list_not_empty, Verb};
 use nom::bits::streaming::take;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
@@ -22,7 +15,15 @@ use nom::{
     sequence::{preceded, terminated},
     IResult, Needed,
 };
-use std::str::FromStr;
+
+use crate::expression::Iri;
+use crate::node::{ObjectList, VarOrTerm};
+use crate::parser::{
+    anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1, var, var_or_iri,
+    var_or_term,
+};
+use crate::query::{Var, VarOrIri};
+use crate::triple::{object_list, property_list_not_empty, Verb};
 
 #[derive(Debug, Clone)]
 pub enum GraphNodePath {

@@ -1,5 +1,6 @@
-use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1, var};
-
+use nom::combinator::{map, opt};
+use nom::multi::separated_nonempty_list;
+use nom::sequence::{delimited, separated_pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -16,12 +17,10 @@ use crate::expression::{
     ExpressionAsVarOpt, Iri,
 };
 use crate::graph::group_graph_pattern;
-use crate::node::GroupGraphPattern;
+use crate::graph::GroupGraphPattern;
+use crate::parser::{default_or_named_iri, iri, preceded_tag, sp, sp1, var};
 use crate::query::Var;
 use crate::triple::{quads_pattern, Quads};
-use nom::combinator::{map, opt};
-use nom::multi::separated_nonempty_list;
-use nom::sequence::{delimited, separated_pair, tuple};
 
 #[derive(Debug, Clone)]
 pub struct GroupClause(pub Vec<GroupCondition>);

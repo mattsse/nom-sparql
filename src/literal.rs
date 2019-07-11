@@ -1,3 +1,7 @@
+use nom::character::complete::{alpha1, digit0, none_of};
+use nom::combinator::{cut, not, opt, recognize};
+use nom::error::{make_error, ErrorKind};
+use nom::sequence::{pair, separated_pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -12,10 +16,6 @@ use nom::{
 };
 
 use crate::arithmetic::Sign;
-use nom::character::complete::{alpha1, digit0, none_of};
-use nom::combinator::{cut, not, opt, recognize};
-use nom::error::{make_error, ErrorKind};
-use nom::sequence::{pair, separated_pair, tuple};
 
 #[derive(Debug, Clone)]
 pub enum NumericLiteral {

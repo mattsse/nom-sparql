@@ -1,15 +1,15 @@
-use crate::node::RdfLiteral;
-use crate::query::Var;
-
-use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
-use crate::call::{BuiltInCall, FunctionCall};
-use crate::literal::NumericLiteral;
-use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::sequence::{delimited, pair, preceded, separated_pair};
 use nom::IResult;
+
+use crate::arithmetic::{ConditionalOrExpression, NumericExpression};
+use crate::call::{BuiltInCall, FunctionCall};
+use crate::literal::NumericLiteral;
+use crate::node::RdfLiteral;
+use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
+use crate::query::Var;
 
 #[derive(Debug, Clone)]
 pub struct Expression(ConditionalOrExpression);

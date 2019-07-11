@@ -1,9 +1,10 @@
+use std::fmt;
+
 use crate::clauses::SolutionModifier;
 use crate::data::DataSetClause;
 use crate::expression::{Constraint, Iri};
-use crate::node::GroupGraphPattern;
+use crate::graph::GroupGraphPattern;
 use crate::select::SelectQuery;
-use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum SparqlQuery {

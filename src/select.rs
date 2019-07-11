@@ -1,22 +1,7 @@
-use crate::expression::{
-    expression, expression_as_var, Expression, ExpressionAsVar, Iri, IriOrFunction, PrefixedName,
-    VarOrExpressionAsVar,
-};
-use crate::node::{
-    Collection, GraphNode, GraphTerm, GroupGraphPattern, ObjectList, PropertyList, RdfLiteral,
-    RdfLiteralDescriptor, TriplesNode, VarOrTerm, VerbList,
-};
-use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri, VarWildcard};
 use nom::branch::alt;
 use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
 use nom::character::complete::{anychar, char, digit1, none_of, one_of};
-
 use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
-
-use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
-use crate::data::{data_set_clause, DataBlock, DataSetClause};
-use crate::parser::{sp, sp1, sp_enc, sp_enc1, var};
-use crate::triple::{arg_list, graph_term};
 use nom::multi::{fold_many0, many1, separated_list};
 use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::{
@@ -28,6 +13,21 @@ use nom::{
     error::ErrorKind,
     AsChar, Err, IResult,
 };
+
+use crate::clauses::{solution_modifier, values_clause, where_clause, SolutionModifier};
+use crate::data::{data_set_clause, DataBlock, DataSetClause};
+use crate::expression::{
+    expression, expression_as_var, Expression, ExpressionAsVar, Iri, IriOrFunction, PrefixedName,
+    VarOrExpressionAsVar,
+};
+use crate::graph::GroupGraphPattern;
+use crate::node::{
+    Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
+    VerbList,
+};
+use crate::parser::{sp, sp1, sp_enc, sp_enc1, var};
+use crate::query::{PrefixDecl, SparqlQuery, Var, VarOrIri, VarWildcard};
+use crate::triple::arg_list;
 
 #[derive(Debug, Clone)]
 pub struct SelectQuery {
@@ -76,6 +76,23 @@ pub(crate) fn select_query(i: &str) -> IResult<&str, SelectQuery> {
             dataset_clauses,
             where_clause,
             solution_modifier,
+        },
+    )(i)
+}
+
+pub(crate) fn sub_select(i: &str) -> IResult<&str, SubSelect> {
+    map(
+        tuple((
+            select_clause,
+            sp_enc(where_clause),
+            solution_modifier,
+            preceded(sp, values_clause),
+        )),
+        |(select_clause, where_clause, solution_modifier, values_clause)| SubSelect {
+            select_clause,
+            where_clause,
+            solution_modifier,
+            values_clause,
         },
     )(i)
 }

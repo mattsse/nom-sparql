@@ -1,6 +1,7 @@
+use std::{fmt, str::FromStr};
+
 use crate::expression::PrimaryExpression;
 use crate::literal::NumericLiteral;
-use std::{fmt, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub struct RelationalExpression {
