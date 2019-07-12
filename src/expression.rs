@@ -8,7 +8,7 @@ use crate::arithmetic::ConditionalOrExpression;
 use crate::call::{BuiltInCall, FunctionCall};
 
 use crate::node::RdfLiteral;
-use crate::parser::{sp_enc, sp_enc1, var};
+use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
 use crate::query::Var;
 
 #[derive(Debug, Clone)]
@@ -93,6 +93,12 @@ pub struct ExpressionAsVarOpt {
     pub var: Option<Var>,
 }
 
+#[derive(Debug, Clone)]
+pub enum VarOrExpressionAsVar {
+    Var(Var),
+    ExpressionAsVar(ExpressionAsVar),
+}
+
 pub(crate) fn constraint(_i: &str) -> IResult<&str, Constraint> {
     unimplemented!()
 }
@@ -110,6 +116,7 @@ pub(crate) fn expression_as_var_opt(i: &str) -> IResult<&str, ExpressionAsVarOpt
         char(')'),
     )(i)
 }
+
 pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
     delimited(
         char('('),
@@ -124,16 +131,14 @@ pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
     )(i)
 }
 
-#[derive(Debug, Clone)]
-pub enum VarOrExpressionAsVar {
-    Var(Var),
-    ExpressionAsVar(ExpressionAsVar),
+pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
+    delimited(char('('), sp_enc(expression), char(')'))(i)
+}
+
+pub(crate) fn bind(i: &str) -> IResult<&str, ExpressionAsVar> {
+    preceded_tag("bind", expression_as_var)(i)
 }
 
 pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
     unimplemented!()
-}
-
-pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
-    delimited(char('('), sp_enc(expression), char(')'))(i)
 }

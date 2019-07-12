@@ -18,6 +18,7 @@ use crate::node::{
     Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
 };
 use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
+use crate::path::{triples_same_subject_path, TriplesSameSubjectPath};
 use crate::query::VarOrIri;
 
 #[derive(Clone, Debug)]
@@ -33,10 +34,7 @@ pub struct ConstructTriples {
 }
 
 #[derive(Debug, Clone)]
-pub struct TriplesBlock {
-    pub first_triples: TriplesSameSubject,
-    pub further_triples: Vec<TriplesSameSubject>,
-}
+pub struct TriplesBlock(pub Vec<TriplesSameSubjectPath>);
 
 pub type TriplesTemplate = Vec<TriplesSameSubject>;
 
@@ -150,6 +148,13 @@ pub(crate) fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
         map(collection, TriplesNode::Collection),
         map(blank_node_property_list, TriplesNode::BlankNodePropertyList),
     ))(i)
+}
+
+pub(crate) fn triples_block(i: &str) -> IResult<&str, TriplesBlock> {
+    map(
+        separated_nonempty_list(many1(sp_enc(char('.'))), triples_same_subject_path),
+        TriplesBlock,
+    )(i)
 }
 
 pub(crate) fn triples_template(i: &str) -> IResult<&str, TriplesTemplate> {

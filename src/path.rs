@@ -36,6 +36,18 @@ pub enum TriplesNodePath {
 }
 
 #[derive(Debug, Clone)]
+pub enum TriplesSameSubjectPath {
+    Term {
+        var_or_term: VarOrTerm,
+        property_list: PropertyListPath,
+    },
+    Node {
+        triples_node: TriplesNodePath,
+        property_list: Option<PropertyListPath>,
+    },
+}
+
+#[derive(Debug, Clone)]
 pub struct PropertyListPath {
     pub verb_path_or_simple: VerbPathOrSimple,
     pub object_list_path: ObjectListPath,
@@ -121,6 +133,25 @@ pub enum IriOrAOrCaret {
 pub enum IriOrA {
     Iri(Iri),
     A,
+}
+
+pub(crate) fn triples_same_subject_path(i: &str) -> IResult<&str, TriplesSameSubjectPath> {
+    alt((
+        map(
+            sp_sep1(var_or_term, property_list_path_not_empty),
+            |(var_or_term, property_list)| TriplesSameSubjectPath::Term {
+                var_or_term,
+                property_list,
+            },
+        ),
+        map(
+            sp_sep(triples_node_path, property_list_path),
+            |(triples_node, property_list)| TriplesSameSubjectPath::Node {
+                triples_node,
+                property_list,
+            },
+        ),
+    ))(i)
 }
 
 pub(crate) fn blank_node_property_list_path(i: &str) -> IResult<&str, PropertyListPath> {

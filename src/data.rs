@@ -52,6 +52,10 @@ pub(crate) fn datablock(i: &str) -> IResult<&str, DataBlock> {
     ))(i)
 }
 
+pub(crate) fn inline_data(i: &str) -> IResult<&str, DataBlock> {
+    preceded_tag("values", datablock)(i)
+}
+
 pub(crate) fn inline_data_full(i: &str) -> IResult<&str, InlineDataFull> {
     map(
         tuple((

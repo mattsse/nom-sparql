@@ -124,8 +124,8 @@ pub(crate) fn copy_stmt(i: &str) -> IResult<&str, CopyStatement> {
 
 pub(crate) fn silent_from_to(i: &str) -> IResult<&str, (bool, GraphOrDefault, GraphOrDefault)> {
     tuple((
-        map(opt(silent), Option::unwrap_or_default),
-        preceded(sp1, graph_or_default),
+        map(opt(terminated(silent, sp1)), Option::unwrap_or_default),
+        graph_or_default,
         preceded(sp_enc(tag_no_case("to")), graph_or_default),
     ))(i)
 }
@@ -134,8 +134,8 @@ pub(crate) fn create_stmt(i: &str) -> IResult<&str, CreateStatement> {
     map(
         tuple((
             pair(tag_no_case("create"), sp1),
-            map(opt(silent), Option::unwrap_or_default),
-            preceded(sp1, graph_ref),
+            map(opt(terminated(silent, sp1)), Option::unwrap_or_default),
+            graph_ref,
         )),
         |(_, silent, graph_ref)| CreateStatement { silent, graph_ref },
     )(i)
@@ -163,8 +163,8 @@ pub(crate) fn clear_stmt(i: &str) -> IResult<&str, ClearStatement> {
 
 pub(crate) fn silent_graph_ref_all(i: &str) -> IResult<&str, (bool, GraphRefAll)> {
     pair(
-        map(opt(silent), Option::unwrap_or_default),
-        preceded(sp1, graph_ref_all),
+        map(opt(terminated(silent, sp1)), Option::unwrap_or_default),
+        graph_ref_all,
     )(i)
 }
 
@@ -172,8 +172,8 @@ pub(crate) fn load_stmt(i: &str) -> IResult<&str, LoadStatement> {
     map(
         tuple((
             pair(tag_no_case("load"), sp1),
-            map(opt(silent), Option::unwrap_or_default),
-            preceded(sp1, iri),
+            map(opt(terminated(silent, sp1)), Option::unwrap_or_default),
+            iri,
             opt(preceded(sp_enc(tag_no_case("into")), graph_ref)),
         )),
         |(_, silent, iri, graph_ref)| LoadStatement {
