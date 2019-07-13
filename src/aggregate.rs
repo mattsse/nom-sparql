@@ -1,13 +1,27 @@
-use crate::expression::{ArgList, Expression, Iri};
+use crate::expression::{
+    distinct_expression, expression, ArgList, DistinctExpression, Expression, Iri,
+};
+use crate::literal::distinct;
+use crate::parser::{
+    bracketted, preceded_bracketted, preceded_tag, sp, sp1, sp_enc, string_literal,
+};
+use nom::{
+    branch::alt,
+    bytes::complete::tag_no_case,
+    character::complete::char,
+    combinator::{map, opt},
+    sequence::{pair, preceded, terminated, tuple},
+    IResult,
+};
 
 #[derive(Debug, Clone)]
 pub enum Aggregate {
     Count(Count),
-    Sum(AggregateModifier),
-    Min(AggregateModifier),
-    Max(AggregateModifier),
-    Avg(AggregateModifier),
-    Sample(AggregateModifier),
+    Sum(DistinctExpression),
+    Min(DistinctExpression),
+    Max(DistinctExpression),
+    Avg(DistinctExpression),
+    Sample(DistinctExpression),
     GroupConcat(GroupConcat),
 }
 
@@ -20,7 +34,7 @@ impl Aggregate {
             | Aggregate::Avg(a)
             | Aggregate::Sample(a) => a.distinct,
             Aggregate::Count(c) => c.distinct,
-            Aggregate::GroupConcat(c) => c.modifier.distinct,
+            Aggregate::GroupConcat(c) => c.expression.distinct,
         }
     }
 }
@@ -39,12 +53,79 @@ pub enum CountTarget {
 
 #[derive(Debug, Clone)]
 pub struct GroupConcat {
-    pub modifier: AggregateModifier,
+    pub expression: DistinctExpression,
     pub separator: Option<String>,
 }
 
-#[derive(Debug, Clone)]
-pub struct AggregateModifier {
-    pub distinct: bool,
-    pub expression: Box<Expression>,
+pub(crate) fn aggregate(i: &str) -> IResult<&str, Aggregate> {
+    alt((
+        map(count, Aggregate::Count),
+        map(
+            preceded_bracketted("sum", distinct_expression),
+            Aggregate::Sum,
+        ),
+        map(
+            preceded_bracketted("min", distinct_expression),
+            Aggregate::Min,
+        ),
+        map(
+            preceded_bracketted("max", distinct_expression),
+            Aggregate::Max,
+        ),
+        map(
+            preceded_bracketted("avg", distinct_expression),
+            Aggregate::Avg,
+        ),
+        map(
+            preceded_bracketted("sample", distinct_expression),
+            Aggregate::Sample,
+        ),
+        map(group_concat, Aggregate::GroupConcat),
+    ))(i)
+}
+
+pub(crate) fn count_target(i: &str) -> IResult<&str, CountTarget> {
+    alt((
+        map(char('*'), |_| CountTarget::All),
+        map(expression, |expr| CountTarget::Expr(Box::new(expr))),
+    ))(i)
+}
+
+pub(crate) fn count(i: &str) -> IResult<&str, Count> {
+    map(
+        preceded_tag(
+            "count",
+            bracketted(pair(
+                map(opt(terminated(distinct, sp1)), Option::unwrap_or_default),
+                count_target,
+            )),
+        ),
+        |(distinct, target)| Count { distinct, target },
+    )(i)
+}
+
+pub(crate) fn group_concat(i: &str) -> IResult<&str, GroupConcat> {
+    map(
+        preceded_tag(
+            "group_concat",
+            bracketted(pair(
+                distinct_expression,
+                opt(preceded(
+                    sp,
+                    preceded(
+                        tuple((
+                            char(';'),
+                            sp_enc(tag_no_case("separator")),
+                            terminated(char('='), sp),
+                        )),
+                        map(string_literal, str::to_string),
+                    ),
+                )),
+            )),
+        ),
+        |(expression, separator)| GroupConcat {
+            expression,
+            separator,
+        },
+    )(i)
 }

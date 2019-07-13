@@ -1,16 +1,16 @@
 use nom::bytes::complete::{tag, tag_no_case};
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
-use nom::sequence::{delimited, pair, preceded, separated_pair, tuple};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::IResult;
 
 use crate::arithmetic::{conditional_and_expression, ConditionalAndExpression};
 use crate::call::{built_in_call, function_call, BuiltInCall, FunctionCall};
 
-use crate::literal::{boolean, numeric_literal, NumericLiteral};
+use crate::literal::{boolean, distinct, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
 use crate::parser::{
-    bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp_enc, sp_enc1, var,
+    bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp1, sp_enc, sp_enc1, var,
 };
 use crate::query::Var;
 use nom::branch::alt;
@@ -242,6 +242,19 @@ pub(crate) fn expression_list(i: &str) -> IResult<&str, ExpressionList> {
             ExpressionList::List,
         ),
     ))(i)
+}
+
+pub(crate) fn distinct_expression(i: &str) -> IResult<&str, DistinctExpression> {
+    map(
+        pair(
+            map(opt(terminated(distinct, sp1)), Option::unwrap_or_default),
+            expression,
+        ),
+        |(distinct, expression)| DistinctExpression {
+            distinct,
+            expression,
+        },
+    )(i)
 }
 
 pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
