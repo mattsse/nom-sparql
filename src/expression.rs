@@ -1,18 +1,21 @@
 use nom::bytes::complete::{tag, tag_no_case};
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
-use nom::sequence::{delimited, pair, preceded, separated_pair};
+use nom::sequence::{delimited, pair, preceded, separated_pair, tuple};
 use nom::IResult;
 
 use crate::arithmetic::{conditional_and_expression, ConditionalAndExpression};
-use crate::call::{built_in_call, BuiltInCall, FunctionCall};
+use crate::call::{built_in_call, function_call, BuiltInCall, FunctionCall};
 
 use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{iri_or_fun, nil, preceded_tag1, rdf_literal, sp_enc, sp_enc1, var};
+use crate::parser::{
+    bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp_enc, sp_enc1, var,
+};
 use crate::query::Var;
 use nom::branch::alt;
 use nom::multi::separated_nonempty_list;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Expression(pub Vec<ConditionalAndExpression>);
@@ -35,7 +38,21 @@ pub enum PrimaryExpression {
 }
 
 #[derive(Debug, Clone)]
-pub struct RegexExpression {}
+pub struct RegexExpression {
+    pub first: Expression,
+    pub second: Expression,
+    pub third: Option<Expression>,
+}
+
+pub type SubstringExpression = RegexExpression;
+
+#[derive(Debug, Clone)]
+pub struct StrReplaceExpression {
+    pub first: Expression,
+    pub second: Expression,
+    pub third: Expression,
+    pub fourth: Option<Expression>,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Iri {
@@ -91,9 +108,9 @@ pub struct DistinctExpression {
 
 #[derive(Debug, Clone)]
 pub enum Constraint {
-    Bracketted(Box<Expression>),
+    Bracketted(Expression),
     BuiltInCall(BuiltInCall),
-    FunctionCall(Box<FunctionCall>),
+    FunctionCall(FunctionCall),
 }
 
 #[derive(Debug, Clone)]
@@ -114,8 +131,61 @@ pub enum VarOrExpressionAsVar {
     ExpressionAsVar(ExpressionAsVar),
 }
 
-pub(crate) fn constraint(_i: &str) -> IResult<&str, Constraint> {
-    unimplemented!()
+pub(crate) fn bracketted_expr3(
+    i: &str,
+) -> IResult<&str, (Expression, Expression, Option<Expression>)> {
+    bracketted(tuple((
+        expression,
+        preceded(sp_enc(char(',')), expression),
+        opt(preceded(sp_enc(char(',')), expression)),
+    )))(i)
+}
+
+pub(crate) fn regex_expression(i: &str) -> IResult<&str, RegexExpression> {
+    map(
+        preceded_tag1("regex", bracketted_expr3),
+        |(first, second, third)| RegexExpression {
+            first,
+            second,
+            third,
+        },
+    )(i)
+}
+
+pub(crate) fn substring_expression(i: &str) -> IResult<&str, SubstringExpression> {
+    map(
+        preceded_tag1("substr", bracketted_expr3),
+        |(first, second, third)| SubstringExpression {
+            first,
+            second,
+            third,
+        },
+    )(i)
+}
+
+pub(crate) fn str_replace_expression(i: &str) -> IResult<&str, StrReplaceExpression> {
+    map(
+        bracketted(tuple((
+            expression,
+            preceded(sp_enc(char(',')), expression),
+            preceded(sp_enc(char(',')), expression),
+            opt(preceded(sp_enc(char(',')), expression)),
+        ))),
+        |(first, second, third, fourth)| StrReplaceExpression {
+            first,
+            second,
+            third,
+            fourth,
+        },
+    )(i)
+}
+
+pub(crate) fn constraint(i: &str) -> IResult<&str, Constraint> {
+    alt((
+        map(bracketted_expression, Constraint::Bracketted),
+        map(built_in_call, Constraint::BuiltInCall),
+        map(function_call, Constraint::FunctionCall),
+    ))(i)
 }
 
 pub(crate) fn expression_as_var_opt(i: &str) -> IResult<&str, ExpressionAsVarOpt> {
@@ -175,7 +245,7 @@ pub(crate) fn expression_list(i: &str) -> IResult<&str, ExpressionList> {
 }
 
 pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
-    delimited(char('('), sp_enc(expression), char(')'))(i)
+    bracketted(sp_enc(expression))(i)
 }
 
 pub(crate) fn bind(i: &str) -> IResult<&str, ExpressionAsVar> {

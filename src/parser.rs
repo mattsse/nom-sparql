@@ -44,6 +44,13 @@ where
     parse_query_bytes(input.as_ref().trim().as_bytes())
 }
 
+pub(crate) fn bracketted<'a, O1, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, O1>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+{
+    delimited(char('('), pat, char(')'))
+}
+
 #[inline]
 pub(crate) fn preceded_tag1<'a, O1, F>(
     tag: &'a str,
