@@ -1,40 +1,70 @@
-use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
-use nom::character::complete::{anychar, char, digit1, none_of, one_of};
-use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
-use nom::multi::{fold_many0, separated_list};
-use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::{
+    branch::alt,
     bytes::complete::take_while,
+    bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
+    character::complete::{anychar, char, digit1, none_of, one_of},
     character::{
         complete::{alpha1, alphanumeric1},
         is_alphabetic,
     },
+    combinator::{complete, cond, cut, map, map_res, not, opt, peek},
     error::ErrorKind,
+    multi::{fold_many0, separated_list},
+    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
     AsChar, Err, IResult,
 };
 
+use crate::ask::ask_query;
 use crate::call::arg_list;
+use crate::clauses::values_clause;
+use crate::construct::construct_query;
+use crate::data::datablock;
+use crate::describe::describe_query;
 use crate::expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName};
 use crate::graph::graph_term;
 use crate::node::{
     Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
     VerbList,
 };
-use crate::query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, Var, VarOrIri};
+use crate::query::{
+    BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement, Var, VarOrIri,
+};
+use crate::select::select_query;
 
-pub fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
-    unimplemented!()
+pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
+    map(
+        tuple((
+            terminated(prologue, sp),
+            sparql_query,
+            opt(preceded(sp1, preceded_tag1("values", datablock))),
+        )),
+        |(prologue, query, values)| SparqlQueryStatement {
+            prologue,
+            query,
+            values,
+        },
+    )(i)
+}
+
+pub fn sparql_query(i: &str) -> IResult<&str, SparqlQuery> {
+    alt((
+        map(select_query, SparqlQuery::Select),
+        map(construct_query, SparqlQuery::Construct),
+        map(describe_query, SparqlQuery::Describe),
+        map(ask_query, SparqlQuery::Ask),
+    ))(i)
 }
 
 pub fn parse_query_bytes<T>(input: T) -> Result<SparqlQuery, &'static str>
 where
     T: AsRef<[u8]>,
 {
-    match sparql_query(input.as_ref()) {
-        Ok((_, o)) => Ok(o),
-        Err(_) => Err("failed to parse query"),
-    }
+    unimplemented!()
+
+    //    match sparql_query(input.as_ref()) {
+    //        Ok((_, o)) => Ok(o),
+    //        Err(_) => Err("failed to parse query"),
+    //    }
 }
 
 pub fn parse_query<T>(input: T) -> Result<SparqlQuery, &'static str>

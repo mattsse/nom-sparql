@@ -3,11 +3,18 @@ use std::fmt;
 use crate::ask::AskQuery;
 use crate::clauses::SolutionModifier;
 use crate::construct::ConstructQuery;
-use crate::data::DataSetClause;
+use crate::data::{DataBlock, DataSetClause};
 use crate::describe::DescribeQuery;
 use crate::expression::Iri;
 use crate::graph::GroupGraphPattern;
 use crate::select::SelectQuery;
+
+#[derive(Debug, Clone)]
+pub struct SparqlQueryStatement {
+    pub prologue: Prologue,
+    pub query: SparqlQuery,
+    pub values: Option<DataBlock>,
+}
 
 #[derive(Debug, Clone)]
 pub enum SparqlQuery {
