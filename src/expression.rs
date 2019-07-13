@@ -1,28 +1,37 @@
-use nom::bytes::complete::tag_no_case;
+use nom::bytes::complete::{tag, tag_no_case};
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
 use nom::sequence::{delimited, pair, preceded, separated_pair};
 use nom::IResult;
 
-use crate::arithmetic::ConditionalOrExpression;
-use crate::call::{BuiltInCall, FunctionCall};
+use crate::arithmetic::{conditional_and_expression, ConditionalAndExpression};
+use crate::call::{built_in_call, BuiltInCall, FunctionCall};
 
+use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{preceded_tag, sp_enc, sp_enc1, var};
+use crate::parser::{iri_or_fun, nil, preceded_tag1, rdf_literal, sp_enc, sp_enc1, var};
 use crate::query::Var;
+use nom::branch::alt;
+use nom::multi::separated_nonempty_list;
 
 #[derive(Debug, Clone)]
-pub struct Expression(ConditionalOrExpression);
+pub struct Expression(pub Vec<ConditionalAndExpression>);
+
+#[derive(Debug, Clone)]
+pub enum ExpressionList {
+    Nil,
+    List(Vec<Expression>),
+}
 
 #[derive(Debug, Clone)]
 pub enum PrimaryExpression {
     BrackettedExpression(Box<Expression>),
     BuiltInCall(BuiltInCall),
-    IriRefOrFunction(IriOrFunction),
+    IriOrFunction(IriOrFunction),
     RdfLiteral(RdfLiteral),
-    NumericLiteral,
+    NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
-    Var,
+    Var(Var),
 }
 
 #[derive(Debug, Clone)]
@@ -72,6 +81,12 @@ pub enum ArgList {
         distinct: bool,
         expressions: Vec<Expression>,
     },
+}
+
+#[derive(Debug, Clone)]
+pub struct DistinctExpression {
+    pub distinct: bool,
+    pub expression: Expression,
 }
 
 #[derive(Debug, Clone)]
@@ -131,14 +146,45 @@ pub(crate) fn expression_as_var(i: &str) -> IResult<&str, ExpressionAsVar> {
     )(i)
 }
 
+pub(crate) fn primary_expression(i: &str) -> IResult<&str, PrimaryExpression> {
+    alt((
+        map(bracketted_expression, |expr| {
+            PrimaryExpression::BrackettedExpression(Box::new(expr))
+        }),
+        map(built_in_call, PrimaryExpression::BuiltInCall),
+        map(iri_or_fun, PrimaryExpression::IriOrFunction),
+        map(rdf_literal, PrimaryExpression::RdfLiteral),
+        map(numeric_literal, PrimaryExpression::NumericLiteral),
+        map(boolean, PrimaryExpression::BooleanLiteral),
+        map(var, PrimaryExpression::Var),
+    ))(i)
+}
+
+pub(crate) fn expression_list(i: &str) -> IResult<&str, ExpressionList> {
+    alt((
+        map(nil, |_| ExpressionList::Nil),
+        map(
+            delimited(
+                char('('),
+                separated_nonempty_list(sp_enc(char(',')), expression),
+                char(')'),
+            ),
+            ExpressionList::List,
+        ),
+    ))(i)
+}
+
 pub(crate) fn bracketted_expression(i: &str) -> IResult<&str, Expression> {
     delimited(char('('), sp_enc(expression), char(')'))(i)
 }
 
 pub(crate) fn bind(i: &str) -> IResult<&str, ExpressionAsVar> {
-    preceded_tag("bind", expression_as_var)(i)
+    preceded_tag1("bind", expression_as_var)(i)
 }
 
-pub(crate) fn expression(_i: &str) -> IResult<&str, Expression> {
-    unimplemented!()
+pub(crate) fn expression(i: &str) -> IResult<&str, Expression> {
+    map(
+        separated_nonempty_list(sp_enc(tag("||")), conditional_and_expression),
+        Expression,
+    )(i)
 }

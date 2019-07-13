@@ -45,7 +45,7 @@ where
 }
 
 #[inline]
-pub(crate) fn preceded_tag<'a, O1, F>(
+pub(crate) fn preceded_tag1<'a, O1, F>(
     tag: &'a str,
     pat: F,
 ) -> impl Fn(&'a str) -> IResult<&'a str, O1>
@@ -53,6 +53,17 @@ where
     F: Fn(&'a str) -> IResult<&'a str, O1>,
 {
     preceded(terminated(tag_no_case(tag), sp1), pat)
+}
+
+#[inline]
+pub(crate) fn preceded_tag<'a, O1, F>(
+    tag: &'a str,
+    pat: F,
+) -> impl Fn(&'a str) -> IResult<&'a str, O1>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+{
+    preceded(terminated(tag_no_case(tag), sp), pat)
 }
 
 #[inline]
@@ -232,7 +243,7 @@ pub(crate) fn iri_ref(i: &str) -> IResult<&str, &str> {
 }
 
 pub(crate) fn named_iri(i: &str) -> IResult<&str, Iri> {
-    preceded_tag(
+    preceded_tag1(
         "named",
         alt((
             map(iri_ref, |i| Iri::Iri(i.to_string())),

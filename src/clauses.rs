@@ -17,7 +17,7 @@ use crate::{
     graph::GroupGraphPattern,
     group::{group_clause, GroupClause},
     order::{order_condition, OrderCondition},
-    parser::{default_or_named_iri, preceded_tag, sp, sp1},
+    parser::{default_or_named_iri, preceded_tag1, sp, sp1},
     triple::{quads_pattern, Quads},
 };
 
@@ -95,22 +95,22 @@ pub(crate) fn where_clause(i: &str) -> IResult<&str, GroupGraphPattern> {
 }
 
 pub(crate) fn values_clause(i: &str) -> IResult<&str, Option<DataBlock>> {
-    opt(preceded_tag("values", datablock))(i)
+    opt(preceded_tag1("values", datablock))(i)
 }
 
 #[inline]
 pub(crate) fn insert_clause(i: &str) -> IResult<&str, Quads> {
-    preceded_tag("insert", quads_pattern)(i)
+    preceded_tag1("insert", quads_pattern)(i)
 }
 
 #[inline]
 pub(crate) fn delete_clause(i: &str) -> IResult<&str, Quads> {
-    preceded_tag("offset", quads_pattern)(i)
+    preceded_tag1("offset", quads_pattern)(i)
 }
 
 #[inline]
 pub(crate) fn using_clause(i: &str) -> IResult<&str, DefaultOrNamedIri> {
-    preceded_tag("using", default_or_named_iri)(i)
+    preceded_tag1("using", default_or_named_iri)(i)
 }
 
 #[inline]

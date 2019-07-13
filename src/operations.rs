@@ -14,7 +14,7 @@ use crate::graph::{
     graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
 };
 use crate::literal::silent;
-use crate::parser::{iri, preceded_tag, sp1, sp_enc};
+use crate::parser::{iri, preceded_tag1, sp1, sp_enc};
 use crate::triple::{quad_data, Quads};
 
 #[derive(Debug, Clone)]
@@ -185,11 +185,11 @@ pub(crate) fn load_stmt(i: &str) -> IResult<&str, LoadStatement> {
 }
 
 pub(crate) fn insert_data(i: &str) -> IResult<&str, Quads> {
-    preceded_tag("insert", preceded_tag("data", quad_data))(i)
+    preceded_tag1("insert", preceded_tag1("data", quad_data))(i)
 }
 pub(crate) fn delete_data(i: &str) -> IResult<&str, Quads> {
-    preceded_tag("delete", preceded_tag("data", quad_data))(i)
+    preceded_tag1("delete", preceded_tag1("data", quad_data))(i)
 }
 pub(crate) fn delete_where_data(i: &str) -> IResult<&str, Quads> {
-    preceded_tag("delete", preceded_tag("where", quad_data))(i)
+    preceded_tag1("delete", preceded_tag1("where", quad_data))(i)
 }

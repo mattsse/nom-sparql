@@ -22,7 +22,7 @@ use crate::{
     expression::{Constraint, Iri},
     literal::NumericLiteral,
     parser::sp_sep1,
-    parser::{default_or_named_iri, iri, preceded_tag, sp, sp1},
+    parser::{default_or_named_iri, iri, preceded_tag1, sp, sp1},
     query::{Var, VarOrIri},
     triple::{property_list, property_list_not_empty, TriplesBlock, Verb},
     triple::{quads_pattern, Quads},
@@ -169,10 +169,10 @@ pub(crate) fn group_or_union_graph_pattern(i: &str) -> IResult<&str, GroupOrUnio
     )(i)
 }
 pub(crate) fn optional_group_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {
-    preceded_tag("optional", group_graph_pattern)(i)
+    preceded_tag1("optional", group_graph_pattern)(i)
 }
 pub(crate) fn minus_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {
-    preceded_tag("minus", group_graph_pattern)(i)
+    preceded_tag1("minus", group_graph_pattern)(i)
 }
 
 pub(crate) fn graph_graph_pattern(i: &str) -> IResult<&str, GraphGraphPattern> {
@@ -233,7 +233,7 @@ pub(crate) fn service_graph_pattern(i: &str) -> IResult<&str, ServiceGraphPatter
 }
 
 pub(crate) fn filter(i: &str) -> IResult<&str, Constraint> {
-    preceded_tag("filter", constraint)(i)
+    preceded_tag1("filter", constraint)(i)
 }
 
 pub(crate) fn group_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {

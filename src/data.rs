@@ -9,7 +9,7 @@ use nom::IResult;
 use crate::expression::{DefaultOrNamedIri, Iri};
 use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{default_or_named_iri, iri, nil, preceded_tag, rdf_literal, sp, sp_enc, var};
+use crate::parser::{default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc, var};
 use crate::query::Var;
 
 pub type DataSetClause = DefaultOrNamedIri;
@@ -42,7 +42,7 @@ pub enum DataBlockValue {
 }
 
 pub(crate) fn data_set_clause(i: &str) -> IResult<&str, DataSetClause> {
-    preceded_tag("from", default_or_named_iri)(i)
+    preceded_tag1("from", default_or_named_iri)(i)
 }
 
 pub(crate) fn datablock(i: &str) -> IResult<&str, DataBlock> {
@@ -53,7 +53,7 @@ pub(crate) fn datablock(i: &str) -> IResult<&str, DataBlock> {
 }
 
 pub(crate) fn inline_data(i: &str) -> IResult<&str, DataBlock> {
-    preceded_tag("values", datablock)(i)
+    preceded_tag1("values", datablock)(i)
 }
 
 pub(crate) fn inline_data_full(i: &str) -> IResult<&str, InlineDataFull> {
