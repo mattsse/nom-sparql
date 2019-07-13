@@ -5,14 +5,14 @@ use crate::node::TriplesSameSubject;
 use crate::parser::{preceded_tag1, sp, sp1, sp_enc, sp_enc1, var_or_iri};
 use crate::query::VarOrIri;
 use crate::triple::{triples_same_subject, triples_template, TriplesTemplate};
-use nom::multi::many1;
-use nom::sequence::{delimited, preceded};
 use nom::{
     branch::alt,
     bytes::complete::tag_no_case,
     character::complete::char,
     combinator::{map, opt},
+    multi::many1,
     multi::{separated_list, separated_nonempty_list},
+    sequence::{delimited, preceded},
     sequence::{terminated, tuple},
     IResult,
 };

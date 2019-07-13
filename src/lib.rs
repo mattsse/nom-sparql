@@ -24,5 +24,6 @@ pub mod query;
 pub mod read;
 pub mod select;
 pub mod triple;
+pub mod update;
 pub mod util;
 pub mod write;

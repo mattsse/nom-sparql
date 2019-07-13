@@ -1,5 +1,5 @@
 use nom::combinator::{map, opt};
-use nom::sequence::{pair, tuple};
+use nom::sequence::{delimited, pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
@@ -9,35 +9,16 @@ use nom::{
     IResult,
 };
 
-use crate::expression::Iri;
+use crate::clauses::{delete_clause, insert_clause, using_clause};
+use crate::expression::{DefaultOrNamedIri, Iri};
 use crate::graph::{
-    graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
+    graph_or_default, graph_ref, graph_ref_all, group_graph_pattern, GraphOrDefault, GraphRefAll,
+    GroupGraphPattern,
 };
 use crate::literal::silent;
-use crate::parser::{iri, preceded_tag1, sp1, sp_enc};
+use crate::parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1};
 use crate::triple::{quad_data, Quads};
-
-#[derive(Debug, Clone)]
-pub struct Update {
-    pub prologue: String,
-    pub update_stmt: Option<UpdateStatement>,
-    pub further: Option<Box<Update>>,
-}
-
-#[derive(Debug, Clone)]
-pub enum UpdateStatement {
-    Load(LoadStatement),
-    Clear(ClearStatement),
-    Drop(DropStatement),
-    Create(CreateStatement),
-    Add(AddStatement),
-    Move(MoveStatement),
-    Copy(CopyStatement),
-    InsertData(Quads),
-    DeleteData(Quads),
-    DeleteWhere(Quads),
-    Modify(Box<ModifyStatement>),
-}
+use nom::multi::separated_list;
 
 #[derive(Debug, Clone)]
 pub struct LoadStatement {
@@ -88,8 +69,8 @@ pub struct CopyStatement {
 #[derive(Debug, Clone)]
 pub struct ModifyStatement {
     pub iri: Option<Iri>,
-    pub delete_insert: Option<DeleteInsert>,
-    pub using_clauses: Vec<Iri>,
+    pub delete_insert: DeleteInsert,
+    pub using_clauses: Vec<DefaultOrNamedIri>,
     pub where_group_graph: GroupGraphPattern,
 }
 
@@ -108,6 +89,25 @@ pub(crate) fn add_stmt(i: &str) -> IResult<&str, AddStatement> {
         |(_, (silent, from, to))| AddStatement { silent, from, to },
     )(i)
 }
+
+pub(crate) fn modify_stmt(i: &str) -> IResult<&str, ModifyStatement> {
+    map(
+        tuple((
+            opt(delimited(tag_no_case("where"), iri, sp1)),
+            terminated(delete_insert, sp),
+            separated_list(sp, using_clause),
+            sp_enc1(tag_no_case("where")),
+            group_graph_pattern,
+        )),
+        |(iri, delete_insert, using_clauses, _, where_group_graph)| ModifyStatement {
+            iri,
+            delete_insert,
+            using_clauses,
+            where_group_graph,
+        },
+    )(i)
+}
+
 pub(crate) fn move_stmt(i: &str) -> IResult<&str, MoveStatement> {
     map(
         pair(pair(tag_no_case("move"), sp1), silent_from_to),
@@ -187,9 +187,21 @@ pub(crate) fn load_stmt(i: &str) -> IResult<&str, LoadStatement> {
 pub(crate) fn insert_data(i: &str) -> IResult<&str, Quads> {
     preceded_tag1("insert", preceded_tag1("data", quad_data))(i)
 }
+
 pub(crate) fn delete_data(i: &str) -> IResult<&str, Quads> {
     preceded_tag1("delete", preceded_tag1("data", quad_data))(i)
 }
+
 pub(crate) fn delete_where_data(i: &str) -> IResult<&str, Quads> {
     preceded_tag1("delete", preceded_tag1("where", quad_data))(i)
+}
+
+pub(crate) fn delete_insert(i: &str) -> IResult<&str, DeleteInsert> {
+    alt((
+        map(
+            pair(delete_clause, opt(preceded(sp, insert_clause))),
+            |(delete, insert)| DeleteInsert::DeleteInsert { delete, insert },
+        ),
+        map(insert_clause, DeleteInsert::Insert),
+    ))(i)
 }
