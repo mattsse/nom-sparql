@@ -1,7 +1,10 @@
 use std::fmt;
 
+use crate::ask::AskQuery;
 use crate::clauses::SolutionModifier;
+use crate::construct::ConstructQuery;
 use crate::data::DataSetClause;
+use crate::describe::DescribeQuery;
 use crate::expression::Iri;
 use crate::graph::GroupGraphPattern;
 use crate::select::SelectQuery;
@@ -25,43 +28,6 @@ pub struct PrefixDecl {
     pub pname_ns: Option<String>,
     pub iri_ref: String,
 }
-
-#[derive(Debug, Clone)]
-pub struct AskQuery {
-    pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: GroupGraphPattern,
-}
-
-#[derive(Debug, Clone)]
-pub struct DescribeQuery {
-    pub dataset_clauses: Vec<DataSetClause>,
-    pub var_iri_ref_wildcard: VarIriRefWildcard,
-    pub where_clause: Option<GroupGraphPattern>,
-    pub solution_modifier: SolutionModifier,
-}
-
-#[derive(Debug, Clone)]
-pub enum VarIriRefWildcard {
-    VarIriRef(Vec<VarOrIri>),
-    WildCard,
-}
-
-#[derive(Debug, Clone)]
-pub enum VarWildcard {
-    Var(Vec<Var>),
-    WildCard,
-}
-
-#[derive(Debug, Clone)]
-pub struct ConstructQuery {
-    pub construct_template: ConstructTemplate,
-    pub dataset_clauses: Vec<DataSetClause>,
-    pub where_clause: GroupGraphPattern,
-    pub solution_modifier: SolutionModifier,
-}
-
-#[derive(Debug, Clone)]
-pub struct ConstructTemplate {}
 
 #[derive(Debug, Clone)]
 pub struct Prologue(pub Vec<BaseOrPrefixDecl>);
