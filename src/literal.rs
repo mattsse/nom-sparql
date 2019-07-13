@@ -28,6 +28,11 @@ pub(crate) fn silent(i: &str) -> IResult<&str, bool> {
     map(tag_no_case("silent"), |_| true)(i)
 }
 
+#[inline]
+pub(crate) fn distinct(i: &str) -> IResult<&str, bool> {
+    map(tag_no_case("distinct"), |_| true)(i)
+}
+
 pub(crate) fn boolean(i: &str) -> IResult<&str, bool> {
     alt((
         map(tag_no_case("false"), |_| false),

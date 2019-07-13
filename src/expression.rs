@@ -69,8 +69,8 @@ pub struct IriOrFunction {
 pub enum ArgList {
     Nil,
     Expression {
-        first: Box<Expression>,
-        further: Vec<Expression>,
+        distinct: bool,
+        expressions: Vec<Expression>,
     },
 }
 

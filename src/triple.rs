@@ -98,10 +98,6 @@ pub(crate) fn quads_entry(i: &str) -> IResult<&str, QuadsEntry> {
     )(i)
 }
 
-pub(crate) fn arg_list(_i: &str) -> IResult<&str, ArgList> {
-    unimplemented!()
-}
-
 #[inline]
 pub(crate) fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
     delimited(tag("["), property_list_not_empty, tag("["))(i)

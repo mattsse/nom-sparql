@@ -14,6 +14,7 @@ use nom::{
     AsChar, Err, IResult,
 };
 
+use crate::call::arg_list;
 use crate::expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName};
 use crate::graph::graph_term;
 use crate::node::{
@@ -21,11 +22,8 @@ use crate::node::{
     VerbList,
 };
 use crate::query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, Var, VarOrIri};
-use crate::triple::arg_list;
 
-// https://www.w3.org/TR/2004/REC-xml11-20040204/#sec-notation
-
-fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
+pub fn sparql_query(_i: &[u8]) -> IResult<&[u8], SparqlQuery> {
     unimplemented!()
 }
 
