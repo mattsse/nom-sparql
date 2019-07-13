@@ -1,24 +1,27 @@
-use nom::IResult;
-
-use crate::expression::{
-    bracketted_expression, expression, expression_list, regex_expression, str_replace_expression,
-    substring_expression, ArgList, Expression, ExpressionList, Iri, RegexExpression,
-    StrReplaceExpression, SubstringExpression,
+use nom::{
+    branch::alt,
+    bytes::complete::tag_no_case,
+    character::complete::char,
+    combinator::{map, opt},
+    multi::{separated_listc, separated_nonempty_list},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
+    IResult,
 };
 
-use crate::aggregate::{aggregate, Aggregate};
-use crate::graph::{group_graph_pattern, GroupGraphPattern};
-use crate::literal::distinct;
-use crate::parser::{
-    iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1, var,
+use crate::{
+    aggregate::{aggregate, Aggregate},
+    expression::{
+        bracketted_expression, expression, expression_list, regex_expression,
+        str_replace_expression, substring_expression, ArgList, Expression, ExpressionList, Iri,
+        RegexExpression, StrReplaceExpression, SubstringExpression,
+    },
+    graph::{group_graph_pattern, GroupGraphPattern},
+    literal::distinct,
+    parser::{
+        iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1, var,
+    },
+    query::Var,
 };
-use crate::query::Var;
-use nom::branch::alt;
-use nom::bytes::complete::tag_no_case;
-use nom::character::complete::char;
-use nom::combinator::{map, opt};
-use nom::multi::{separated_listc, separated_nonempty_list};
-use nom::sequence::{delimited, preceded, separated_pair, terminated, tuple};
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall {

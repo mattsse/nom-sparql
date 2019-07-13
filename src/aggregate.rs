@@ -1,9 +1,7 @@
-use crate::expression::{
-    distinct_expression, expression, ArgList, DistinctExpression, Expression, Iri,
-};
-use crate::literal::distinct;
-use crate::parser::{
-    bracketted, preceded_bracketted, preceded_tag, sp, sp1, sp_enc, string_literal,
+use crate::{
+    expression::{distinct_expression, expression, ArgList, DistinctExpression, Expression, Iri},
+    literal::distinct,
+    parser::{bracketted, preceded_bracketted, preceded_tag, sp, sp1, sp_enc, string_literal},
 };
 use nom::{
     branch::alt,

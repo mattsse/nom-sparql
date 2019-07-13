@@ -1,13 +1,15 @@
 use std::fmt;
 
-use crate::ask::AskQuery;
-use crate::clauses::SolutionModifier;
-use crate::construct::ConstructQuery;
-use crate::data::{DataBlock, DataSetClause};
-use crate::describe::DescribeQuery;
-use crate::expression::Iri;
-use crate::graph::GroupGraphPattern;
-use crate::select::SelectQuery;
+use crate::{
+    ask::AskQuery,
+    clauses::SolutionModifier,
+    construct::ConstructQuery,
+    data::{DataBlock, DataSetClause},
+    describe::DescribeQuery,
+    expression::Iri,
+    graph::GroupGraphPattern,
+    select::SelectQuery,
+};
 
 #[derive(Debug, Clone)]
 pub struct SparqlQueryStatement {

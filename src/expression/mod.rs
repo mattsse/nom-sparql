@@ -1,20 +1,22 @@
-use nom::bytes::complete::{tag, tag_no_case};
-use nom::character::complete::char;
-use nom::combinator::{map, opt};
-use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
-use nom::IResult;
-
-use crate::arithmetic::{conditional_and_expression, ConditionalAndExpression};
-use crate::call::{built_in_call, function_call, BuiltInCall, FunctionCall};
-
-use crate::literal::{boolean, distinct, numeric_literal, NumericLiteral};
-use crate::node::RdfLiteral;
-use crate::parser::{
-    bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp1, sp_enc, sp_enc1, var,
+use nom::{
+    branch::alt,
+    bytes::complete::{tag, tag_no_case},
+    character::complete::char,
+    combinator::{map, opt},
+    multi::separated_nonempty_list,
+    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
+    IResult,
 };
-use crate::query::Var;
-use nom::branch::alt;
-use nom::multi::separated_nonempty_list;
+
+use crate::{
+    arithmetic::{conditional_and_expression, ConditionalAndExpression},
+    call::{built_in_call, function_call, BuiltInCall, FunctionCall},
+    literal::{boolean, distinct, numeric_literal, NumericLiteral},
+    node::RdfLiteral,
+    parser::{bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp1, sp_enc, sp_enc1, var},
+    query::Var,
+};
+
 use std::fmt;
 
 #[derive(Debug, Clone)]
