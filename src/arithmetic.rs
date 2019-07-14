@@ -11,16 +11,16 @@ use nom::multi::{separated_list, separated_nonempty_list};
 use nom::sequence::{pair, preceded, terminated, tuple};
 use nom::IResult;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RelationalExpression {
     pub lhs: AdditiveExpression,
     pub rhs: Option<OpExpression>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ConditionalAndExpression(pub Vec<RelationalExpression>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum OpExpression {
     EQ(AdditiveExpression),
     NE(AdditiveExpression),
@@ -32,13 +32,13 @@ pub enum OpExpression {
     NIN(ExpressionList),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AdditiveExpression {
     pub lhs: MultiplicativeExpression,
     pub rhs: Vec<AddExpression>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AddExpression {
     Add(MultiplicativeExpression),
     Sub(MultiplicativeExpression),
@@ -48,19 +48,19 @@ pub enum AddExpression {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MultiplicativeExpression {
     pub lhs: UnaryExpression,
     pub rhs: Vec<MultExpression>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MultExpression {
     Mult(UnaryExpression),
     Div(UnaryExpression),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnaryExpression {
     Not(PrimaryExpression),
     Add(PrimaryExpression),

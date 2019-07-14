@@ -16,12 +16,14 @@ use nom::{
 
 use crate::arithmetic::Sign;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NumericLiteral {
     Int(i64),
     /// a sparql decimal is just sparql double without an exponent
     Double((f64, Option<i64>)),
 }
+
+impl Eq for NumericLiteral {}
 
 #[inline]
 pub(crate) fn silent(i: &str) -> IResult<&str, bool> {

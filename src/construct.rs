@@ -17,13 +17,13 @@ use nom::{
     IResult,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ConstructQuery {
     SubConstruct(SubConstruct),
     SubTriples(SubTriples),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubConstruct {
     pub construct_template: ConstructTemplate,
     pub dataset_clauses: Vec<DataSetClause>,
@@ -31,14 +31,14 @@ pub struct SubConstruct {
     pub solution_modifier: SolutionModifier,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubTriples {
     pub dataset_clauses: Vec<DataSetClause>,
     pub triples_template: Option<TriplesTemplate>,
     pub solution_modifier: SolutionModifier,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ConstructTemplate(pub Vec<TriplesSameSubject>);
 
 pub fn sub_triples(i: &str) -> IResult<&str, SubTriples> {

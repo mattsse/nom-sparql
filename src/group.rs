@@ -20,10 +20,10 @@ use crate::expression::{
 use crate::parser::{sp, sp1, var};
 use crate::query::Var;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupClause(pub Vec<GroupCondition>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GroupCondition {
     BuiltInCall(BuiltInCall),
     FunctionCall(FunctionCall),

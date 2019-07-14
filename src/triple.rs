@@ -21,36 +21,36 @@ use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
 use crate::path::{triples_same_subject_path, TriplesSameSubjectPath};
 use crate::query::VarOrIri;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Verb {
     VarOrIriRef(VarOrIri),
     A,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ConstructTriples {
     pub first_triples: TriplesSameSubject,
     pub further_triples: Vec<TriplesSameSubject>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TriplesBlock(pub Vec<TriplesSameSubjectPath>);
 
 pub type TriplesTemplate = Vec<TriplesSameSubject>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Quads {
     pub first_triples: Option<TriplesTemplate>,
     pub entries: Vec<QuadsEntry>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct QuadsEntry {
     pub quads_not_triples: QuadsNotTriples,
     pub triples_template: Option<TriplesTemplate>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct QuadsNotTriples {
     pub var_or_iri: VarOrIri,
     pub triples_template: Option<TriplesTemplate>,

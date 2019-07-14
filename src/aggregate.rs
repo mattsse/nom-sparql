@@ -12,7 +12,7 @@ use nom::{
     IResult,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Aggregate {
     Count(Count),
     Sum(DistinctExpression),
@@ -37,19 +37,19 @@ impl Aggregate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Count {
     pub distinct: bool,
     pub target: CountTarget,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CountTarget {
     All,
     Expr(Box<Expression>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupConcat {
     pub expression: DistinctExpression,
     pub separator: Option<String>,

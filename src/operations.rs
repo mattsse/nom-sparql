@@ -20,53 +20,53 @@ use crate::parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1};
 use crate::triple::{quad_data, Quads};
 use nom::multi::separated_list;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct LoadStatement {
     pub iri: Iri,
     pub silent: bool,
     pub graph_ref: Option<Iri>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ClearStatement {
     pub silent: bool,
     pub graph_ref_all: GraphRefAll,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DropStatement {
     pub silent: bool,
     pub graph_ref_all: GraphRefAll,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CreateStatement {
     pub silent: bool,
     pub graph_ref: Iri,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AddStatement {
     pub silent: bool,
     pub from: GraphOrDefault,
     pub to: GraphOrDefault,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MoveStatement {
     pub silent: bool,
     pub from: GraphOrDefault,
     pub to: GraphOrDefault,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CopyStatement {
     pub silent: bool,
     pub from: GraphOrDefault,
     pub to: GraphOrDefault,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ModifyStatement {
     pub iri: Option<Iri>,
     pub delete_insert: DeleteInsert,
@@ -74,7 +74,7 @@ pub struct ModifyStatement {
     pub where_group_graph: GroupGraphPattern,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DeleteInsert {
     DeleteInsert {
         delete: Quads,

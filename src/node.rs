@@ -4,16 +4,16 @@ use crate::graph::{GraphNode, GraphTerm};
 use crate::query::Var;
 use crate::triple::Verb;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum VarOrTerm {
     Var(Var),
     Term(GraphTerm),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ObjectList(pub Vec<GraphNode>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct VerbList {
     pub verb: Verb,
     pub object_list: ObjectList,
@@ -25,10 +25,10 @@ impl VerbList {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PropertyList(pub Vec<VerbList>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Collection(pub Vec<GraphNode>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -61,19 +61,19 @@ pub enum RdfLiteralDescriptor {
     IriRef(Iri),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BlankNode {
     Anon,
     Label(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TriplesNode {
     Collection(Collection),
     BlankNodePropertyList(PropertyList),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TriplesSameSubject {
     Term {
         var_or_term: VarOrTerm,

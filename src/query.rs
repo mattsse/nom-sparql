@@ -11,14 +11,14 @@ use crate::{
     select::SelectQuery,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SparqlQueryStatement {
     pub prologue: Prologue,
     pub query: SparqlQuery,
     pub values: Option<DataBlock>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SparqlQuery {
     Ask(AskQuery),
     Select(SelectQuery),

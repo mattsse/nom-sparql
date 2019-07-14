@@ -16,7 +16,7 @@ use crate::graph::GroupGraphPattern;
 
 use crate::parser::{sp, sp1, sp_enc, var};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SelectQuery {
     pub select_clause: SelectClause,
     pub dataset_clauses: Vec<DataSetClause>,
@@ -24,7 +24,7 @@ pub struct SelectQuery {
     pub solution_modifier: SolutionModifier,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubSelect {
     pub select_clause: SelectClause,
     pub where_clause: GroupGraphPattern,
@@ -32,19 +32,19 @@ pub struct SubSelect {
     pub values_clause: Option<DataBlock>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SelectClause {
     pub modifier: Option<SelectModifier>,
     pub vars: SelectVars,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SelectVars {
     VarOrExpressionAsVar(Vec<VarOrExpressionAsVar>),
     All,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SelectModifier {
     Distinct,
     Reduced,

@@ -8,19 +8,19 @@ use crate::expression::{bracketted_expression, constraint, Constraint, Expressio
 use crate::parser::{sp1, var};
 use crate::query::Var;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Order {
     Asc,
     Desc,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct OrderExpression {
     pub order: Order,
     pub expression: Expression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum OrderCondition {
     Order(Box<OrderExpression>),
     Constraint(Box<Constraint>),

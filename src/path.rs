@@ -24,18 +24,18 @@ use crate::parser::{
 use crate::query::Var;
 use crate::triple::object_list;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphNodePath {
     VarOrTerm(VarOrTerm),
     TriplesNodePath(TriplesNodePath),
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TriplesNodePath {
     CollectionPath(Vec<GraphNodePath>),
     BlankNodePropertyListPath(PropertyListPath),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TriplesSameSubjectPath {
     Term {
         var_or_term: VarOrTerm,
@@ -47,23 +47,23 @@ pub enum TriplesSameSubjectPath {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PropertyListPath {
     pub verb_path_or_simple: VerbPathOrSimple,
     pub object_list_path: ObjectListPath,
     pub entries: Vec<PropertyListPathEntry>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PropertyListPathEntry {
     pub verb_path_or_simple: VerbPathOrSimple,
     pub object_list: ObjectList,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ObjectListPath(pub Vec<GraphNodePath>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum VerbPathOrSimple {
     Path(Path),
     Simple(Var),
@@ -71,19 +71,19 @@ pub enum VerbPathOrSimple {
 
 pub(crate) type Path = PathAlternative;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathAlternative(pub Vec<PathSequence>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathSequence(pub Vec<PathEltOrInverse>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PathEltOrInverse {
     PathElt(PathElt),
     Inverse(PathElt),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathElt {
     pub path_primary: PathPrimary,
     pub path_mod: Option<PathMod>,
@@ -109,7 +109,7 @@ impl FromStr for PathMod {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PathPrimary {
     Iri(Iri),
     A,
@@ -117,19 +117,19 @@ pub enum PathPrimary {
     Path(Path),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathNegatedPropertySet(pub Vec<PathOneInPropertySet>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathOneInPropertySet(pub IriOrAOrCaret);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum IriOrAOrCaret {
     IriOrA(IriOrA),
     /// [`IriOrA`] prefixed with a `^`
     Caret(IriOrA),
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum IriOrA {
     Iri(Iri),
     A,

@@ -19,16 +19,16 @@ use crate::{
 
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Expression(pub Vec<ConditionalAndExpression>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ExpressionList {
     Nil,
     List(Vec<Expression>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PrimaryExpression {
     BrackettedExpression(Box<Expression>),
     BuiltInCall(BuiltInCall),
@@ -39,7 +39,7 @@ pub enum PrimaryExpression {
     Var(Var),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct RegexExpression {
     pub first: Expression,
     pub second: Expression,
@@ -48,7 +48,7 @@ pub struct RegexExpression {
 
 pub type SubstringExpression = RegexExpression;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct StrReplaceExpression {
     pub first: Expression,
     pub second: Expression,
@@ -81,19 +81,19 @@ pub enum PrefixedName {
     PnameNS(Option<String>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DefaultOrNamedIri {
     Default(Iri),
     Named(Iri),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct IriOrFunction {
     pub iri: Iri,
     pub arg_list: Option<ArgList>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ArgList {
     Nil,
     Expression {
@@ -102,32 +102,32 @@ pub enum ArgList {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DistinctExpression {
     pub distinct: bool,
     pub expression: Expression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Constraint {
     Bracketted(Expression),
     BuiltInCall(BuiltInCall),
     FunctionCall(FunctionCall),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ExpressionAsVar {
     pub expression: Box<Expression>,
     pub var: Var,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ExpressionAsVarOpt {
     pub expression: Box<Expression>,
     pub var: Option<Var>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum VarOrExpressionAsVar {
     Var(Var),
     ExpressionAsVar(ExpressionAsVar),

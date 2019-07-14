@@ -13,7 +13,7 @@ use nom::{
     IResult,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DescribeQuery {
     pub dataset_clauses: Vec<DataSetClause>,
     pub var_or_iris_or_all: VarOrIrisOrAll,
@@ -21,7 +21,7 @@ pub struct DescribeQuery {
     pub solution_modifier: SolutionModifier,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum VarOrIrisOrAll {
     VarIri(Vec<VarOrIri>),
     All,

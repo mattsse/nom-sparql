@@ -14,25 +14,25 @@ use crate::query::Var;
 
 pub type DataSetClause = DefaultOrNamedIri;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DataBlock {
     InlineDataOneVar(InlineDataOneVar),
     InlineDataFull(InlineDataFull),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct InlineDataOneVar {
     pub var: Var,
     pub values: Vec<DataBlockValue>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct InlineDataFull {
     pub vars: Vec<Var>,
     pub data_block_values: Vec<Vec<DataBlockValue>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DataBlockValue {
     Iri(Iri),
     RdfLiteral(RdfLiteral),

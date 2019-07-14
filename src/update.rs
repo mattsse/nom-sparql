@@ -24,14 +24,14 @@ use crate::parser::{iri, preceded_tag1, prologue, sp, sp1, sp_enc};
 use crate::query::Prologue;
 use crate::triple::{quad_data, Quads};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Update {
     pub prologue: Prologue,
     pub update_stmt: Option<UpdateStatement>,
     pub inner_update: Option<Box<Update>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UpdateStatement {
     Load(LoadStatement),
     Clear(ClearStatement),

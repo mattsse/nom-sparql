@@ -23,13 +23,13 @@ use crate::{
     query::Var,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FunctionCall {
     pub iri: Iri,
     pub args: ArgList,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BuiltInCall {
     Aggregate(Aggregate),
     Str(Expression),

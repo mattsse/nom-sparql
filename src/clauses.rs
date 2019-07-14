@@ -21,7 +21,7 @@ use crate::{
     triple::{quads_pattern, Quads},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SolutionModifier {
     pub order_by: Option<OrderClause>,
     pub group_by: Option<GroupClause>,
@@ -29,10 +29,10 @@ pub struct SolutionModifier {
     pub limit_offset: Option<LimitOffsetClause>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HavingClause(pub Vec<Constraint>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct OrderClause(pub Vec<OrderCondition>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]

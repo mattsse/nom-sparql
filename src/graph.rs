@@ -31,7 +31,7 @@ use nom::character::complete::char;
 use nom::multi::{many0, separated_list, separated_nonempty_list};
 use nom::sequence::tuple;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphTerm {
     IriRef(Iri),
     RdfLiteral(RdfLiteral),
@@ -42,19 +42,19 @@ pub enum GraphTerm {
     Nil,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupGraphPatternSub {
     pub triples_block: Option<TriplesBlock>,
     pub graph_pattern_and_triples: Vec<GraphPatternAndTriples>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphOrDefault {
     Graph(Iri),
     Default,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphRefAll {
     GraphRef(Iri),
     Default,
@@ -62,31 +62,31 @@ pub enum GraphRefAll {
     All,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphNode {
     VarOrTerm(VarOrTerm),
     TriplesNode(Box<TriplesNode>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GroupGraphPattern {
     SubSelect(Box<SubSelect>),
     GroupGraphPatternSub(GroupGraphPatternSub),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GraphPattern {
     pub pattern_or_filter: GraphPatternOrFilter,
     pub triples_block: Option<TriplesBlock>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphPatternOrFilter {
     GraphPattern(Box<GraphPatternNotTriples>),
     Filter(Constraint),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphPatternNotTriples {
     Optional(GroupGraphPattern),
     GroupOrUnion(GroupOrUnionGraphPattern),
@@ -98,22 +98,22 @@ pub enum GraphPatternNotTriples {
     InlineData(DataBlock),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GraphPatternAndTriples {
     pub graph_pattern: GraphPatternNotTriples,
     pub triples: Option<TriplesBlock>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupOrUnionGraphPattern(pub Vec<GroupGraphPattern>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GraphGraphPattern {
     pub var_or_iri: VarOrIri,
     pub graph_pattern: GroupGraphPattern,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ServiceGraphPattern {
     pub var_or_iri: VarOrIri,
     pub silent: bool,

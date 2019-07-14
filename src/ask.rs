@@ -8,7 +8,7 @@ use nom::multi::separated_list;
 use nom::sequence::{terminated, tuple};
 use nom::IResult;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AskQuery {
     pub dataset_clauses: Vec<DataSetClause>,
     pub where_clause: GroupGraphPattern,
