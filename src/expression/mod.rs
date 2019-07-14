@@ -1,3 +1,5 @@
+pub mod iri;
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, tag_no_case},
@@ -272,4 +274,34 @@ pub(crate) fn expression(i: &str) -> IResult<&str, Expression> {
         separated_nonempty_list(sp_enc(tag("||")), conditional_and_expression),
         Expression,
     )(i)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::parser::iri;
+
+    #[test]
+    fn is_iri() {
+        assert_eq!(
+            iri("<http://example.org/book/book1>"),
+            Ok(("", Iri::Iri("http://example.org/book/book1".to_string())))
+        );
+
+        assert_eq!(
+            iri(":book1"),
+            Ok((
+                "",
+                Iri::PrefixedName(PrefixedName::PnameLN {
+                    pn_prefix: None,
+                    pn_local: "book1".to_string()
+                })
+            ))
+        );
+
+        assert_eq!(
+            iri(":"),
+            Ok(("", Iri::PrefixedName(PrefixedName::PnameNS(None))))
+        );
+    }
 }
