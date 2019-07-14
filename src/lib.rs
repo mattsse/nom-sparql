@@ -16,7 +16,6 @@ pub mod describe;
 pub mod expression;
 pub mod graph;
 pub mod group;
-pub mod keywords;
 pub mod literal;
 pub mod node;
 pub mod operations;
