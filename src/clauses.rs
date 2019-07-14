@@ -176,4 +176,5 @@ mod tests {
             Ok(("", LimitOffsetClause::offset_limit(5, Some(10))))
         );
     }
+
 }

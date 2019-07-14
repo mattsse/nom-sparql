@@ -1,17 +1,20 @@
 use nom::branch::alt;
-use nom::bytes::complete::tag_no_case;
+use nom::bytes::complete::{tag, tag_no_case};
 use nom::character::complete::char;
 use nom::combinator::map;
-use nom::multi::many0;
+use nom::multi::{many0, many1, separated_list, separated_nonempty_list};
 use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::IResult;
 
 use crate::expression::{DefaultOrNamedIri, Iri};
 use crate::literal::{boolean, numeric_literal, NumericLiteral};
 use crate::node::RdfLiteral;
-use crate::parser::{default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc, var};
+use crate::parser::{
+    bracketted, default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc, var,
+};
 use crate::query::Var;
 
+/// NAMED GraphClause = NAMED Iri
 pub type DataSetClause = DefaultOrNamedIri;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -20,13 +23,13 @@ pub enum DataBlock {
     InlineDataFull(InlineDataFull),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct InlineDataOneVar {
     pub var: Var,
     pub values: Vec<DataBlockValue>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct InlineDataFull {
     pub vars: Vec<Var>,
     pub data_block_values: Vec<Vec<DataBlockValue>>,
@@ -56,23 +59,17 @@ pub(crate) fn inline_data(i: &str) -> IResult<&str, DataBlock> {
     preceded_tag1("values", datablock)(i)
 }
 
+//delimited(tag("("), map(var,|x|vec![x]), tag(")")),
 pub(crate) fn inline_data_full(i: &str) -> IResult<&str, InlineDataFull> {
     map(
         tuple((
-            alt((
-                map(nil, |_| Vec::new()),
-                delimited(char('('), many0(sp_enc(var)), char(')')),
-            )),
+            bracketted(preceded(sp, many0(sp_enc(var)))),
             delimited(
                 sp_enc(char('{')),
-                many0(alt((
-                    map(sp_enc(nil), |_| Vec::new()),
-                    delimited(
-                        sp_enc(char('(')),
-                        many0(sp_enc(datablock_value)),
-                        sp_enc(char(')')),
-                    ),
-                ))),
+                many0(sp_enc(bracketted(preceded(
+                    sp,
+                    many0(sp_enc(datablock_value)),
+                )))),
                 preceded(sp, char('}')),
             ),
         )),
@@ -105,4 +102,120 @@ pub(crate) fn datablock_value(i: &str) -> IResult<&str, DataBlockValue> {
         map(boolean, DataBlockValue::BooleanLiteral),
         map(tag_no_case("undef"), |_| DataBlockValue::UnDef),
     ))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::clauses::values_clause;
+    use crate::expression::PrefixedName;
+    use crate::node::{RdfLiteral, RdfLiteralDescriptor};
+
+    #[test]
+    fn is_datablock_value() {
+        assert_eq!(
+            datablock_value("true"),
+            Ok(("", DataBlockValue::BooleanLiteral(true)))
+        );
+
+        assert_eq!(
+            datablock_value("'chat'@fr"),
+            Ok((
+                "",
+                DataBlockValue::RdfLiteral(RdfLiteral::new(
+                    "chat",
+                    RdfLiteralDescriptor::LangTag("fr".to_string())
+                ))
+            ))
+        );
+
+        assert_eq!(
+            datablock_value(r#""abc""#),
+            Ok(("", DataBlockValue::RdfLiteral(RdfLiteral::literal("abc"))))
+        );
+    }
+
+    #[test]
+    fn is_inline_data_one_var() {
+        assert_eq!(
+            inline_data_one_var(r#"?name { "abc" "def" }"#),
+            Ok((
+                "",
+                InlineDataOneVar::new(
+                    Var::QMark("name".to_string()),
+                    vec![
+                        DataBlockValue::RdfLiteral(RdfLiteral::literal("abc")),
+                        DataBlockValue::RdfLiteral(RdfLiteral::literal("def"))
+                    ]
+                )
+            ))
+        );
+    }
+
+    #[test]
+    fn is_inline_data_full() {
+        assert_eq!(
+            inline_data_full(r#"() { }"#),
+            Ok(("", InlineDataFull::new(vec![], vec![])))
+        );
+
+        assert_eq!(
+            inline_data_full("( ?name ?z) { }"),
+            Ok((
+                "",
+                InlineDataFull::new(
+                    vec![Var::QMark("name".to_string()), Var::QMark("z".to_string())],
+                    vec![]
+                )
+            ))
+        );
+
+        assert_eq!(
+            inline_data_full(r#"(?name) {  ("abc")  ("def")}"#),
+            Ok((
+                "",
+                InlineDataFull::new(
+                    vec![Var::QMark("name".to_string())],
+                    vec![
+                        vec![DataBlockValue::RdfLiteral(RdfLiteral::literal("abc"))],
+                        vec![DataBlockValue::RdfLiteral(RdfLiteral::literal("def"))]
+                    ]
+                )
+            ))
+        );
+    }
+
+    #[test]
+    fn is_values_clause() {
+        assert_eq!(
+            values_clause(
+                r#"values (?x ?y) {
+  (:uri1 1)
+  (:uri2 UNDEF)
+}"#
+            ),
+            Ok((
+                "",
+                Some(DataBlock::InlineDataFull(InlineDataFull::new(
+                    vec![Var::QMark("x".to_string()), Var::QMark("y".to_string())],
+                    vec![
+                        vec![
+                            DataBlockValue::Iri(Iri::PrefixedName(PrefixedName::PnameLN {
+                                pn_prefix: None,
+                                pn_local: "uri1".to_string(),
+                            },)),
+                            DataBlockValue::NumericLiteral(NumericLiteral::Int(1))
+                        ],
+                        vec![
+                            DataBlockValue::Iri(Iri::PrefixedName(PrefixedName::PnameLN {
+                                pn_prefix: None,
+                                pn_local: "uri2".to_string(),
+                            },)),
+                            DataBlockValue::UnDef
+                        ]
+                    ]
+                )))
+            ))
+        );
+    }
 }
