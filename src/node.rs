@@ -89,6 +89,7 @@ pub enum TriplesSameSubject {
 mod tests {
     use super::*;
     use crate::graph::blank_node;
+    use crate::triple::collection;
 
     #[test]
     fn is_blank_node() {
@@ -97,6 +98,20 @@ mod tests {
         assert_eq!(
             blank_node("_:a.b.c"),
             Ok(("", BlankNode::Label("a.b.c".to_string())))
+        );
+    }
+
+    #[test]
+    fn is_collection() {
+        assert_eq!(
+            collection("(()())"),
+            Ok((
+                "",
+                Collection(vec![GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil))
+
+                ])
+            ))
         );
     }
 

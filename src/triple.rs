@@ -17,13 +17,13 @@ use crate::graph::graph_node;
 use crate::node::{
     Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
 };
-use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
+use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term, bracketted};
 use crate::path::{triples_same_subject_path, TriplesSameSubjectPath};
 use crate::query::VarOrIri;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Verb {
-    VarOrIriRef(VarOrIri),
+    VarOrIri(VarOrIri),
     A,
 }
 
@@ -105,7 +105,7 @@ pub(crate) fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
 
 pub(crate) fn collection(i: &str) -> IResult<&str, Collection> {
     map(
-        delimited(tag("()"), many1(graph_node), tag("()")),
+        bracketted(many1(sp_enc(graph_node))),
         Collection,
     )(i)
 }
@@ -134,7 +134,7 @@ pub(crate) fn property_list(i: &str) -> IResult<&str, Option<PropertyList>> {
 
 pub(crate) fn verb(i: &str) -> IResult<&str, Verb> {
     alt((
-        map(var_or_iri, Verb::VarOrIriRef),
+        map(var_or_iri, Verb::VarOrIri),
         map(tag_no_case("a"), |_| Verb::A),
     ))(i)
 }
@@ -178,7 +178,39 @@ pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject>
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::expression::Iri;
+    use crate::query::Var;
 
     #[test]
-    fn is_object_list() {}
+    fn is_verb() {
+        assert_eq!(verb("a"), Ok(("", Verb::A)));
+
+        assert_eq!(
+            verb("?name"),
+            Ok((
+                "",
+                Verb::VarOrIri(VarOrIri::Var(Var::QMark("name".to_string())))
+            ))
+        );
+
+        assert_eq!(
+            verb("<http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                Verb::VarOrIri(VarOrIri::Iri(Iri::Iri(
+                    "http://example.org/foaf/aliceFoaf".to_string()
+                )))
+            ))
+        );
+    }
+
+    //    #[test]
+    //    fn is_property_list() {
+    //        assert_eq!(
+    //        property_list_not_empty()
+    //        , Ok(("", ))
+    //        );
+    //
+    //    }
 }

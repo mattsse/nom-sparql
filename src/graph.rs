@@ -316,6 +316,38 @@ mod tests {
     }
 
     #[test]
-    fn is_graph_term() {}
+    fn is_graph_term() {
+        assert_eq!(graph_term("()"), Ok(("", GraphTerm::Nil)));
+        assert_eq!(
+            graph_term("true"),
+            Ok(("", GraphTerm::BooleanLiteral(true)))
+        );
+        assert_eq!(
+            graph_term("<http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                GraphTerm::Iri(Iri::Iri("http://example.org/foaf/aliceFoaf".to_string()))
+            ))
+        );
+
+        assert_eq!(
+            graph_term("-5"),
+            Ok(("", GraphTerm::NumericLiteral(NumericLiteral::Int(-5))))
+        );
+    }
+
+    #[test]
+    fn is_var_or_term() {
+        assert_eq!(var_or_term("()"), Ok(("", VarOrTerm::Term(GraphTerm::Nil))));
+        assert_eq!(
+            var_or_term("false"),
+            Ok(("", VarOrTerm::Term(GraphTerm::BooleanLiteral(false))))
+        );
+
+        assert_eq!(
+            var_or_term("?name"),
+            Ok(("", VarOrTerm::Var(Var::QMark("name".to_string()))))
+        );
+    }
 
 }

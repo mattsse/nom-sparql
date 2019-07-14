@@ -150,6 +150,7 @@ pub(crate) fn limit_offset_clause(i: &str) -> IResult<&str, LimitOffsetClause> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::expression::{Iri, PrefixedName};
 
     #[test]
     fn is_limit_clause() {
@@ -169,11 +170,44 @@ mod tests {
             Ok(("", LimitOffsetClause::limit_offset(5, Some(10))))
         );
     }
+
     #[test]
     fn is_offset_limit_clause() {
         assert_eq!(
             limit_offset_clause("offset 5 limit 10"),
             Ok(("", LimitOffsetClause::offset_limit(5, Some(10))))
+        );
+    }
+    #[test]
+    fn is_using_clause() {
+        assert_eq!(
+            using_clause("using named <http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Named(Iri::Iri("http://example.org/foaf/aliceFoaf".to_string()))
+            ))
+        );
+
+        assert_eq!(
+            using_clause("using named :uri1"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Named(Iri::PrefixedName(PrefixedName::PnameLN {
+                    pn_prefix: None,
+                    pn_local: "uri1".to_string(),
+                },))
+            ))
+        );
+
+        assert_eq!(
+            using_clause("using :uri1"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Default(Iri::PrefixedName(PrefixedName::PnameLN {
+                    pn_prefix: None,
+                    pn_local: "uri1".to_string(),
+                },))
+            ))
         );
     }
 

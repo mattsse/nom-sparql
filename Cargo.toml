@@ -13,3 +13,4 @@ license = "MIT OR APACHE 2.0"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 nom = "5.0"
+derive-new = "0.5"
