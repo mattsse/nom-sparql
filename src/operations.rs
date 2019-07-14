@@ -20,20 +20,20 @@ use crate::parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1};
 use crate::triple::{quad_data, Quads};
 use nom::multi::separated_list;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct LoadStatement {
     pub iri: Iri,
     pub silent: bool,
     pub graph_ref: Option<Iri>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct ClearStatement {
     pub silent: bool,
     pub graph_ref_all: GraphRefAll,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct DropStatement {
     pub silent: bool,
     pub graph_ref_all: GraphRefAll,
@@ -212,6 +212,36 @@ mod tests {
     use crate::expression::PrefixedName;
 
     #[test]
+    fn is_drop_stmt() {
+        assert_eq!(
+            drop_stmt("drop  graph :uri1"),
+            Ok((
+                "",
+                DropStatement::new(
+                    false,
+                    GraphRefAll::GraphRef(Iri::PrefixedName(PrefixedName::PnameLN {
+                        pn_prefix: None,
+                        pn_local: "uri1".to_string(),
+                    },))
+                )
+            ))
+        );
+
+        assert_eq!(
+            drop_stmt("drop silent graph <http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                DropStatement::new(
+                    true,
+                    GraphRefAll::GraphRef(Iri::Iri(
+                        "http://example.org/foaf/aliceFoaf".to_string()
+                    ))
+                )
+            ))
+        );
+    }
+
+    #[test]
     fn is_create_stmt() {
         assert_eq!(
             create_stmt("create silent graph <http://example.org/foaf/aliceFoaf>"),
@@ -238,5 +268,4 @@ mod tests {
             ))
         )
     }
-
 }

@@ -291,6 +291,29 @@ pub(crate) fn graph_node(i: &str) -> IResult<&str, GraphNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::expression::PrefixedName;
+
+    #[test]
+    fn is_graph_ref_all() {
+        assert_eq!(graph_ref_all("default"), Ok(("", GraphRefAll::Default)));
+        assert_eq!(
+            graph_ref_all("graph :uri1"),
+            Ok((
+                "",
+                GraphRefAll::GraphRef(Iri::PrefixedName(PrefixedName::PnameLN {
+                    pn_prefix: None,
+                    pn_local: "uri1".to_string(),
+                },))
+            ))
+        );
+        assert_eq!(
+            graph_ref_all("graph <http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                GraphRefAll::GraphRef(Iri::Iri("http://example.org/foaf/aliceFoaf".to_string()))
+            ))
+        );
+    }
 
     #[test]
     fn is_graph_term() {}
