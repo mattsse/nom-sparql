@@ -41,6 +41,8 @@ pub enum DataBlockValue {
     RdfLiteral(RdfLiteral),
     NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
+    /// If a variable has no value for a particular solution in the VALUES clause,
+    /// the keyword UNDEF is used instead of an RDF term.
     UnDef,
 }
 
@@ -218,4 +220,37 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn is_data_set_clause() {
+        assert_eq!(
+            data_set_clause("FROM    <http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Default(Iri::Iri(
+                    "http://example.org/foaf/aliceFoaf".to_string()
+                ))
+            ))
+        );
+
+        assert_eq!(
+            data_set_clause("FROM NAMED <http://example.org/bob>"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Named(Iri::Iri("http://example.org/bob".to_string()))
+            ))
+        );
+
+        assert_eq!(
+            data_set_clause("FROM NAMED :uri1"),
+            Ok((
+                "",
+                DefaultOrNamedIri::Named(Iri::PrefixedName(PrefixedName::PnameLN {
+                    pn_prefix: None,
+                    pn_local: "uri1".to_string(),
+                },))
+            ))
+        );
+    }
+
 }

@@ -127,3 +127,6 @@ pub(crate) fn group_concat(i: &str) -> IResult<&str, GroupConcat> {
         },
     )(i)
 }
+
+#[cfg(test)]
+mod tests {}

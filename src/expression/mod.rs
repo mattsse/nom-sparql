@@ -304,4 +304,5 @@ mod test {
             Ok(("", Iri::PrefixedName(PrefixedName::PnameNS(None))))
         );
     }
+
 }

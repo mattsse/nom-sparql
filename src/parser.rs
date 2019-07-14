@@ -307,8 +307,8 @@ pub(crate) fn named_iri(i: &str) -> IResult<&str, Iri> {
 
 pub(crate) fn default_or_named_iri(i: &str) -> IResult<&str, DefaultOrNamedIri> {
     alt((
-        map(iri, DefaultOrNamedIri::Default),
         map(named_iri, DefaultOrNamedIri::Named),
+        map(iri, DefaultOrNamedIri::Default),
     ))(i)
 }
 
