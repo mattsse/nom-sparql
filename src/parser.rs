@@ -14,6 +14,7 @@ use nom::{
     AsChar, Err, IResult,
 };
 
+use crate::aggregate::count;
 use crate::{
     ask::ask_query,
     call::arg_list,
@@ -32,7 +33,9 @@ use crate::{
     },
     select::select_query,
 };
+use nom::character::{is_alphanumeric, is_digit};
 use nom::combinator::recognize;
+use nom::multi::{many0, many1};
 
 pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
     map(
@@ -204,6 +207,7 @@ pub(crate) fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
     )(i)
 }
 
+// TODO refactor
 pub(crate) fn language_tag(i: &str) -> IResult<&str, String> {
     map(
         preceded(
@@ -345,30 +349,53 @@ pub(crate) fn var(i: &str) -> IResult<&str, Var> {
 
 #[inline]
 pub(crate) fn pn_tail(i: &str) -> IResult<&str, &str> {
-    take_while(|c| is_pn_char(c) || c == '.')(i)
+    // TODO ((PN_CHARS|'.')* PN_CHARS)?
+    recognize(separated_list(char('.'), pn_chars1))(i)
 }
 
-pub(crate) fn pn_any<'a, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, String>
-where
-    F: Fn(&'a str) -> IResult<&'a str, &'a str>,
-{
-    map(pair(pat, pn_tail), |(s1, tail)| format!("{}{}", s1, tail))
+fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
+    u8::from_str_radix(input, 16)
+}
+fn is_hex_digit(c: char) -> bool {
+    c.is_digit(16)
 }
 
-pub(crate) fn pn_local(i: &str) -> IResult<&str, String> {
-    pn_any(take_while_m_n(1, 1, |c| is_pn_char(c) || c.is_dec_digit()))(i)
+fn hex_primary(i: &str) -> IResult<&str, &str> {
+    take_while_m_n(2, 2, is_hex_digit)(i)
 }
 
-pub(crate) fn pn_prefix(i: &str) -> IResult<&str, String> {
-    pn_any(pn_chars_base_one)(i)
+fn plx(i: &str) -> IResult<&str, &str> {
+    recognize(alt((
+        pair(tag("%"), hex_primary),
+        pair(tag("\\"), recognize(one_of("_~.-!$&'()*+,;=/?#@%"))),
+    )))(i)
+}
+
+pub(crate) fn pn_local(i: &str) -> IResult<&str, &str> {
+    recognize(pair(
+        alt((
+            pn_chars_u_one,
+            tag(":"),
+            take_while_m_n(1, 1, |c| is_digit(c as u8)),
+            plx,
+        )),
+        recognize(separated_list(
+            tag("."),
+            many0(alt((take_while1(|c| is_pn_char(c) || c == ':'), plx))),
+        )),
+    ))(i)
+}
+
+pub(crate) fn pn_prefix(i: &str) -> IResult<&str, &str> {
+    recognize(pair(pn_chars_base_one, pn_tail))(i)
 }
 
 pub(crate) fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
-    terminated(opt(pn_prefix), preceded(sp, char(':')))(i)
+    terminated(opt(map(pn_prefix, str::to_string)), preceded(sp, char(':')))(i)
 }
 
 pub(crate) fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
-    pair(pname_ns, preceded(sp, pn_local))(i)
+    pair(pname_ns, preceded(sp, map(pn_local, str::to_string)))(i)
 }
 
 #[inline]
@@ -496,6 +523,25 @@ mod tests {
     }
 
     #[test]
+    fn is_iri() {
+        assert_eq!(
+            iri("<http://education.data.gov.uk/def/school/>"),
+            Ok((
+                "",
+                Iri::Iri("http://education.data.gov.uk/def/school/".to_string())
+            ))
+        );
+
+        //        assert_eq!(
+        //            iri("<http://education.data.gov.uk/def/school/>"),
+        //            Ok((
+        //                "",
+        //                Iri::PrefixedName("http://education.data.gov.uk/def/school/".to_string())
+        //            ))
+        //        );
+    }
+
+    #[test]
     fn is_string_literal() {
         assert_eq!(
             string_literal(r#""some string lit""#),
@@ -552,14 +598,14 @@ mod tests {
             ))
         );
         assert_eq!(
-            rdf_literal(r#""abc"^^appNS:appDataType"#),
+            rdf_literal(r#""abc"^^appNS:1app.Data.Type"#),
             Ok((
                 "",
                 RdfLiteral::new(
                     "abc",
                     RdfLiteralDescriptor::IriRef(Iri::PrefixedName(PrefixedName::PnameLN {
                         pn_prefix: Some("appNS".to_string()),
-                        pn_local: "appDataType".to_string()
+                        pn_local: "1app.Data.Type".to_string()
                     }))
                 )
             ))

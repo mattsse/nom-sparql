@@ -264,7 +264,7 @@ pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
 pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
     alt((
         map(sp_sep1(tag("_:"), pn_local), |(_, label)| {
-            BlankNode::Label(label)
+            BlankNode::Label(label.to_string())
         }),
         map(anon, |_| BlankNode::Anon),
     ))(i)
