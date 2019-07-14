@@ -14,22 +14,24 @@ use nom::{
     AsChar, Err, IResult,
 };
 
-use crate::ask::ask_query;
-use crate::call::arg_list;
-use crate::clauses::values_clause;
-use crate::construct::construct_query;
-use crate::data::datablock;
-use crate::describe::describe_query;
-use crate::expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName};
-use crate::graph::graph_term;
-use crate::node::{
-    Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode, VarOrTerm,
-    VerbList,
+use crate::{
+    ask::ask_query,
+    call::arg_list,
+    clauses::values_clause,
+    construct::construct_query,
+    data::datablock,
+    describe::describe_query,
+    expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName},
+    graph::graph_term,
+    node::{
+        Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode,
+        VarOrTerm, VerbList,
+    },
+    query::{
+        BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement, Var, VarOrIri,
+    },
+    select::select_query,
 };
-use crate::query::{
-    BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement, Var, VarOrIri,
-};
-use crate::select::select_query;
 
 pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
     map(
@@ -259,7 +261,10 @@ pub(crate) fn prefix_decl(i: &str) -> IResult<&str, PrefixDecl> {
             sp_enc(pname_ns),
             map(iri_ref, str::to_string),
         )),
-        |(_, pname_ns, iri_ref)| PrefixDecl { pname_ns, iri_ref },
+        |(_, pname_ns, iri_ref)| PrefixDecl {
+            pname_ns,
+            iri: iri_ref,
+        },
     )(i)
 }
 

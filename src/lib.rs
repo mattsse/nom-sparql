@@ -2,6 +2,9 @@
 
 #![allow(unused)]
 
+#[macro_use]
+extern crate derive_new;
+
 pub mod aggregate;
 pub mod arithmetic;
 pub mod ask;

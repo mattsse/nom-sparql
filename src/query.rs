@@ -32,10 +32,10 @@ impl fmt::Display for SparqlQuery {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, new)]
 pub struct PrefixDecl {
     pub pname_ns: Option<String>,
-    pub iri_ref: String,
+    pub iri: String,
 }
 
 #[derive(Debug, Clone)]
@@ -57,4 +57,13 @@ pub enum VarOrIri {
 pub enum Var {
     Var1(String),
     Var2(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::prefix_decl;
+
+    #[test]
+    fn is_prefix() {}
 }
