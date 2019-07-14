@@ -86,4 +86,18 @@ pub enum TriplesSameSubject {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::graph::blank_node;
+
+    #[test]
+    fn is_blank_node() {
+        assert_eq!(blank_node("[]"), Ok(("", BlankNode::Anon)));
+
+        assert_eq!(
+            blank_node("_:a.b.c"),
+            Ok(("", BlankNode::Label("a.b.c".to_string())))
+        );
+    }
+
+}

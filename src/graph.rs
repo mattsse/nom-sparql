@@ -13,7 +13,10 @@ use crate::data::inline_data;
 use crate::expression::{bind, constraint, ExpressionAsVar};
 use crate::literal::{boolean, numeric_literal, silent};
 use crate::node::{BlankNode, RdfLiteral, TriplesNode, VarOrTerm};
-use crate::parser::{anon, nil, pn_local, rdf_literal, sp_enc, sp_enc1, var_or_iri, var_or_term};
+use crate::parser::{
+    anon, nil, pn_chars_tail, pn_chars_u_one, pn_local, rdf_literal, sp_enc, sp_enc1, sp_sep,
+    var_or_iri, var_or_term,
+};
 use crate::select::{sub_select, SubSelect};
 use crate::triple::{triples_block, triples_node};
 use crate::{
@@ -28,12 +31,13 @@ use crate::{
     triple::{quads_pattern, Quads},
 };
 use nom::character::complete::char;
+use nom::combinator::recognize;
 use nom::multi::{many0, separated_list, separated_nonempty_list};
 use nom::sequence::tuple;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GraphTerm {
-    IriRef(Iri),
+    Iri(Iri),
     RdfLiteral(RdfLiteral),
     NumericLiteral(NumericLiteral),
     BooleanLiteral(bool),
@@ -252,7 +256,7 @@ pub(crate) fn group_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {
 
 pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
     alt((
-        map(iri, GraphTerm::IriRef),
+        map(iri, GraphTerm::Iri),
         map(rdf_literal, GraphTerm::RdfLiteral),
         map(numeric_literal, GraphTerm::NumericLiteral),
         map(boolean, GraphTerm::BooleanLiteral),
@@ -263,9 +267,16 @@ pub(crate) fn graph_term(i: &str) -> IResult<&str, GraphTerm> {
 
 pub(crate) fn blank_node(i: &str) -> IResult<&str, BlankNode> {
     alt((
-        map(sp_sep1(tag("_:"), pn_local), |(_, label)| {
-            BlankNode::Label(label.to_string())
-        }),
+        map(
+            sp_sep(
+                tag("_:"),
+                recognize(pair(
+                    alt((pn_chars_u_one, take_while_m_n(1, 1, |c| is_digit(c as u8)))),
+                    pn_chars_tail,
+                )),
+            ),
+            |(_, label)| BlankNode::Label(label.to_string()),
+        ),
         map(anon, |_| BlankNode::Anon),
     ))(i)
 }
@@ -275,4 +286,13 @@ pub(crate) fn graph_node(i: &str) -> IResult<&str, GraphNode> {
         map(var_or_term, GraphNode::VarOrTerm),
         map(triples_node, |node| GraphNode::TriplesNode(Box::new(node))),
     ))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_graph_term() {}
+
 }

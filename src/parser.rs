@@ -348,9 +348,12 @@ pub(crate) fn var(i: &str) -> IResult<&str, Var> {
 }
 
 #[inline]
-pub(crate) fn pn_tail(i: &str) -> IResult<&str, &str> {
-    // TODO ((PN_CHARS|'.')* PN_CHARS)?
-    recognize(separated_list(char('.'), pn_chars1))(i)
+pub(crate) fn pn_chars_tail(i: &str) -> IResult<&str, &str> {
+    // ((PN_CHARS|'.')* PN_CHARS)?
+    recognize(pair(
+        opt(take_while1(|c| c == '.')),
+        separated_list(take_while1(|c| c == '.'), pn_chars1),
+    ))(i)
 }
 
 fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
@@ -379,15 +382,18 @@ pub(crate) fn pn_local(i: &str) -> IResult<&str, &str> {
             take_while_m_n(1, 1, |c| is_digit(c as u8)),
             plx,
         )),
-        recognize(separated_list(
-            tag("."),
-            many0(alt((take_while1(|c| is_pn_char(c) || c == ':'), plx))),
+        recognize(pair(
+            opt(take_while1(|c| c == '.')),
+            separated_list(
+                take_while1(|c| c == '.'),
+                many0(alt((take_while1(|c| is_pn_char(c) || c == ':'), plx))),
+            ),
         )),
     ))(i)
 }
 
 pub(crate) fn pn_prefix(i: &str) -> IResult<&str, &str> {
-    recognize(pair(pn_chars_base_one, pn_tail))(i)
+    recognize(pair(pn_chars_base_one, pn_chars_tail))(i)
 }
 
 pub(crate) fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
@@ -606,6 +612,19 @@ mod tests {
                     RdfLiteralDescriptor::IriRef(Iri::PrefixedName(PrefixedName::PnameLN {
                         pn_prefix: Some("appNS".to_string()),
                         pn_local: "1app.Data.Type".to_string()
+                    }))
+                )
+            ))
+        );
+        assert_eq!(
+            rdf_literal(r#""abc"^^appNS:1...app.Data.Type"#),
+            Ok((
+                "",
+                RdfLiteral::new(
+                    "abc",
+                    RdfLiteralDescriptor::IriRef(Iri::PrefixedName(PrefixedName::PnameLN {
+                        pn_prefix: Some("appNS".to_string()),
+                        pn_local: "1...app.Data.Type".to_string()
                     }))
                 )
             ))
