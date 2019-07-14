@@ -39,7 +39,7 @@ pub struct DropStatement {
     pub graph_ref_all: GraphRefAll,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct CreateStatement {
     pub silent: bool,
     pub graph_ref: Iri,
@@ -204,4 +204,39 @@ pub(crate) fn delete_insert(i: &str) -> IResult<&str, DeleteInsert> {
         ),
         map(insert_clause, DeleteInsert::Insert),
     ))(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::expression::PrefixedName;
+
+    #[test]
+    fn is_create_stmt() {
+        assert_eq!(
+            create_stmt("create silent graph <http://example.org/foaf/aliceFoaf>"),
+            Ok((
+                "",
+                CreateStatement::new(
+                    true,
+                    Iri::Iri("http://example.org/foaf/aliceFoaf".to_string())
+                )
+            ))
+        );
+
+        assert_eq!(
+            create_stmt("create   graph   :uri1"),
+            Ok((
+                "",
+                CreateStatement::new(
+                    false,
+                    Iri::PrefixedName(PrefixedName::PnameLN {
+                        pn_prefix: None,
+                        pn_local: "uri1".to_string(),
+                    },)
+                )
+            ))
+        )
+    }
+
 }
