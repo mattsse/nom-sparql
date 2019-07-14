@@ -32,6 +32,7 @@ use crate::{
     },
     select::select_query,
 };
+use nom::combinator::recognize;
 
 pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
     map(
@@ -230,14 +231,11 @@ pub(crate) fn echar(i: &str) -> IResult<&str, &str> {
 }
 
 // TODO consider unicode cases in second
-pub(crate) fn var_name(i: &str) -> IResult<&str, String> {
-    map(
-        pair(
-            take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
-            take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
-        ),
-        |(s1, s2)| format!("{}{}", s1, s2),
-    )(i)
+pub(crate) fn var_name(i: &str) -> IResult<&str, &str> {
+    recognize(pair(
+        take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
+        take_while(|c| is_pn_chars_u(c) || c.is_dec_digit()),
+    ))(i)
 }
 
 pub(crate) fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
@@ -261,17 +259,14 @@ pub(crate) fn prefix_decl(i: &str) -> IResult<&str, PrefixDecl> {
             sp_enc(pname_ns),
             map(iri_ref, str::to_string),
         )),
-        |(_, pname_ns, iri_ref)| PrefixDecl {
-            pname_ns,
-            iri: iri_ref,
-        },
+        |(_, pname_ns, iri_ref)| PrefixDecl { pname_ns, iri_ref },
     )(i)
 }
 
 pub(crate) fn prologue(i: &str) -> IResult<&str, Prologue> {
     map(
         separated_list(
-            sp,
+            sp1,
             alt((
                 map(base_decl, |s| BaseOrPrefixDecl::Base(s.to_string())),
                 map(prefix_decl, BaseOrPrefixDecl::Prefix),
@@ -337,8 +332,14 @@ pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
 
 pub(crate) fn var(i: &str) -> IResult<&str, Var> {
     alt((
-        map(preceded(char('?'), preceded(sp, var_name)), Var::Var1),
-        map(preceded(char('$'), preceded(sp, var_name)), Var::Var2),
+        map(
+            preceded(char('?'), preceded(sp, map(var_name, str::to_string))),
+            Var::QMark,
+        ),
+        map(
+            preceded(char('$'), preceded(sp, map(var_name, str::to_string))),
+            Var::Dollar,
+        ),
     ))(i)
 }
 
