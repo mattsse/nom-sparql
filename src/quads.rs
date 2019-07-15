@@ -23,7 +23,7 @@ use crate::{
 
 #[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct Quads {
-    pub first_triples: Option<TriplesTemplate>,
+    pub first_triple: Option<TriplesTemplate>,
     pub entries: Vec<QuadsEntry>,
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn quads(i: &str) -> IResult<&str, Quads> {
     map(
         pair(opt(terminated(triples_template, sp)), many0(quads_entry)),
         |(first_triples, entries)| Quads {
-            first_triples,
+            first_triple: first_triples,
             entries,
         },
     )(i)
@@ -150,5 +150,53 @@ mod tests {
     }
 
     #[test]
-    fn is_quads() {}
+    fn is_quads_pattern() {
+        assert_eq!(
+            quads_pattern(
+                r#"{
+   ?g dc:publisher ?who .
+   GRAPH ?g { ?x foaf:mbox ?mbox }
+}"#
+            ),
+            Ok((
+                "",
+                Quads::new(
+                    Some(vec![TriplesSameSubject::Term {
+                        var_or_term: VarOrTerm::Var(Var::QMark("g".to_string())),
+                        property_list: PropertyList(vec![VerbList::new(
+                            Verb::VarOrIri(VarOrIri::Iri(Iri::PrefixedName(
+                                PrefixedName::PnameLN {
+                                    pn_prefix: Some("dc".to_string()),
+                                    pn_local: "publisher".to_string(),
+                                }
+                            ))),
+                            ObjectList(vec![GraphNode::VarOrTerm(VarOrTerm::Var(Var::QMark(
+                                "who".to_string(),
+                            )))]),
+                        )]),
+                    }]),
+                    vec![QuadsEntry::new(
+                        QuadsNotTriples::new(
+                            VarOrIri::Var(Var::QMark("g".to_string())),
+                            Some(vec![TriplesSameSubject::Term {
+                                var_or_term: VarOrTerm::Var(Var::QMark("x".to_string())),
+                                property_list: PropertyList(vec![VerbList::new(
+                                    Verb::VarOrIri(VarOrIri::Iri(Iri::PrefixedName(
+                                        PrefixedName::PnameLN {
+                                            pn_prefix: Some("foaf".to_string()),
+                                            pn_local: "mbox".to_string(),
+                                        }
+                                    ))),
+                                    ObjectList(vec![GraphNode::VarOrTerm(VarOrTerm::Var(
+                                        Var::QMark("mbox".to_string(),)
+                                    ))]),
+                                )]),
+                            }])
+                        ),
+                        None
+                    )]
+                )
+            ))
+        );
+    }
 }
