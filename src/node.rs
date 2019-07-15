@@ -67,18 +67,6 @@ pub enum TriplesNode {
     BlankNodePropertyList(PropertyList),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum TriplesSameSubject {
-    Term {
-        var_or_term: VarOrTerm,
-        property_list: PropertyList,
-    },
-    Node {
-        triples_node: TriplesNode,
-        property_list: Option<PropertyList>,
-    },
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -14,12 +14,22 @@ use nom::{
 use crate::expression::ArgList;
 use crate::graph::graph_node;
 
-use crate::node::{
-    Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
-};
+use crate::node::{Collection, ObjectList, PropertyList, TriplesNode, VarOrTerm, VerbList};
 use crate::parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
 use crate::path::{triples_same_subject_path, TriplesSameSubjectPath};
 use crate::query::VarOrIri;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum TriplesSameSubject {
+    Term {
+        var_or_term: VarOrTerm,
+        property_list: PropertyList,
+    },
+    Node {
+        triples_node: TriplesNode,
+        property_list: Option<PropertyList>,
+    },
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Verb {
@@ -99,7 +109,11 @@ pub(crate) fn quads_entry(i: &str) -> IResult<&str, QuadsEntry> {
 }
 
 pub(crate) fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
-    delimited(terminated(char('['),sp), property_list_not_empty, preceded(sp, char(']')))(i)
+    delimited(
+        terminated(char('['), sp),
+        property_list_not_empty,
+        preceded(sp, char(']')),
+    )(i)
 }
 
 pub(crate) fn collection(i: &str) -> IResult<&str, Collection> {
@@ -207,8 +221,6 @@ mod tests {
     }
 
     #[test]
-    fn is_triple_same_subject() {
-
-    }
+    fn is_triple_same_subject() {}
 
 }

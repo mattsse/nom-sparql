@@ -1,10 +1,12 @@
-use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
-use crate::data::{data_set_clause, DataSetClause};
-use crate::graph::GroupGraphPattern;
-use crate::node::TriplesSameSubject;
-use crate::parser::{preceded_tag1, sp, sp1, sp_enc, sp_enc1, var_or_iri};
-use crate::query::VarOrIri;
-use crate::triple::{triples_same_subject, triples_template, TriplesTemplate};
+use crate::{
+    clauses::{solution_modifier, where_clause, SolutionModifier},
+    data::{data_set_clause, DataSetClause},
+    graph::GroupGraphPattern,
+    parser::{preceded_tag1, sp, sp1, sp_enc, sp_enc1, var_or_iri},
+    query::VarOrIri,
+    triple::TriplesSameSubject,
+    triple::{triples_same_subject, triples_template, TriplesTemplate},
+};
 use nom::{
     branch::alt,
     bytes::complete::tag_no_case,
