@@ -1,7 +1,7 @@
 use crate::{
     expression::{distinct_expression, expression, ArgList, DistinctExpression, Expression, Iri},
     literal::distinct,
-    parser::{bracketted, preceded_bracketted, preceded_tag, sp, sp1, sp_enc, string_literal},
+    terminals::{bracketted, preceded_bracketted, preceded_tag, sp, sp1, sp_enc, string_literal},
 };
 use nom::{
     branch::alt,

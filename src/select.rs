@@ -14,7 +14,7 @@ use crate::expression::{
 };
 use crate::graph::GroupGraphPattern;
 
-use crate::parser::{sp, sp1, sp_enc};
+use crate::terminals::{sp, sp1, sp_enc};
 use crate::var::var;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

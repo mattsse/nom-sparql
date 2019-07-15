@@ -17,7 +17,7 @@ use nom::{
 
 use crate::expression::Iri;
 use crate::node::ObjectList;
-use crate::parser::{anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1};
+use crate::terminals::{anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1};
 use crate::triple::object_list;
 use crate::var::{var, var_or_iri, var_or_term, Var, VarOrTerm};
 

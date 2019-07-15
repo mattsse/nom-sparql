@@ -17,7 +17,7 @@ use crate::{
     },
     graph::{group_graph_pattern, GroupGraphPattern},
     literal::distinct,
-    parser::{
+    terminals::{
         iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1,
     },
     var::{var, Var},

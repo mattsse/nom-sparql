@@ -29,9 +29,9 @@ use crate::{
     graph::graph_term,
     graph::GraphTerm,
     node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
-    parser::{iri, is_pn_chars_u, sp},
     query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement},
     select::select_query,
+    terminals::{iri, is_pn_chars_u, sp},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]

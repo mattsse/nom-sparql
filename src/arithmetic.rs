@@ -2,7 +2,7 @@ use std::{fmt, str::FromStr};
 
 use crate::expression::{expression_list, primary_expression, ExpressionList, PrimaryExpression};
 use crate::literal::{numeric_literal, NumericLiteral};
-use crate::parser::{preceded_tag, sp, sp1, sp_enc, sp_enc1};
+use crate::terminals::{preceded_tag, sp, sp1, sp_enc, sp_enc1};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::bytes::streaming::tag_no_case;

@@ -50,7 +50,7 @@ pub enum BaseOrPrefixDecl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::{base_decl, prefix_decl, prologue};
+    use crate::terminals::{base_decl, prefix_decl, prologue};
 
     #[test]
     fn is_base() {

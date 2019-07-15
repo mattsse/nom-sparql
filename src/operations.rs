@@ -18,8 +18,8 @@ use crate::{
         GraphRefAll, GroupGraphPattern,
     },
     literal::silent,
-    parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1},
     quads::{quad_data, Quads},
+    terminals::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, new)]

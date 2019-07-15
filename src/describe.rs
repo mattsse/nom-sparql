@@ -1,7 +1,7 @@
 use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
 use crate::data::{data_set_clause, DataSetClause};
 use crate::graph::GroupGraphPattern;
-use crate::parser::{sp, sp1, sp_enc, sp_enc1};
+use crate::terminals::{sp, sp1, sp_enc, sp_enc1};
 use crate::var::{var_or_iri, var_or_iris_or_all, VarOrIri, VarOrIrisOrAll};
 use nom::{
     branch::alt,

@@ -5,7 +5,7 @@ use nom::sequence::separated_pair;
 use nom::IResult;
 
 use crate::expression::{bracketted_expression, constraint, Constraint, Expression};
-use crate::parser::sp1;
+use crate::terminals::sp1;
 use crate::var::{var, Var};
 
 #[derive(Debug, Clone, Eq, PartialEq)]

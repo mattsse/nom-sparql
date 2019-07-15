@@ -15,8 +15,8 @@ use crate::{
     expression::ArgList,
     graph::graph_node,
     node::{Collection, ObjectList, PropertyList, TriplesNode},
-    parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1},
     path::{triples_same_subject_path, TriplesSameSubjectPath},
+    terminals::{bracketted, sp, sp_enc, sp_sep, sp_sep1},
     triple::{triples_template, TriplesTemplate},
     var::{var_or_iri, var_or_term, VarOrIri, VarOrTerm, VerbList},
 };

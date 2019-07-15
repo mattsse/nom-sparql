@@ -12,7 +12,9 @@ use crate::{
     expression::{DefaultOrNamedIri, Iri},
     literal::{boolean, numeric_literal, NumericLiteral},
     node::RdfLiteral,
-    parser::{bracketted, default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc},
+    terminals::{
+        bracketted, default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc,
+    },
     var::{var, Var},
 };
 

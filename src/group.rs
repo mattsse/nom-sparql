@@ -17,7 +17,7 @@ use crate::expression::{
     ExpressionAsVarOpt, Iri,
 };
 
-use crate::parser::{sp, sp1};
+use crate::terminals::{sp, sp1};
 use crate::var::{var, Var};
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -17,8 +17,8 @@ use crate::{
     graph::GroupGraphPattern,
     group::{group_clause, GroupClause},
     order::{order_condition, OrderCondition},
-    parser::{default_or_named_iri, preceded_tag1, sp, sp1},
     quads::{quads_pattern, Quads},
+    terminals::{default_or_named_iri, preceded_tag1, sp, sp1},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]
