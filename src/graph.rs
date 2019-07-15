@@ -9,26 +9,26 @@ use nom::{
     IResult,
 };
 
-use crate::data::inline_data;
-use crate::expression::{bind, constraint, ExpressionAsVar};
-use crate::literal::{boolean, numeric_literal, silent};
-use crate::node::{BlankNode, RdfLiteral, TriplesNode, VarOrTerm};
-use crate::parser::{
-    anon, nil, pn_chars_tail, pn_chars_u_one, pn_local, rdf_literal, sp_enc, sp_enc1, sp_sep,
-    var_or_iri, var_or_term,
-};
-use crate::select::{sub_select, SubSelect};
-use crate::triple::{triples_block, triples_node};
 use crate::{
+    data::inline_data,
     data::{datablock, DataBlock},
     expression::DefaultOrNamedIri,
+    expression::{bind, constraint, ExpressionAsVar},
     expression::{Constraint, Iri},
     literal::NumericLiteral,
+    literal::{boolean, numeric_literal, silent},
+    node::{BlankNode, RdfLiteral, TriplesNode, VarOrTerm},
     parser::sp_sep1,
+    parser::{
+        anon, nil, pn_chars_tail, pn_chars_u_one, pn_local, rdf_literal, sp_enc, sp_enc1, sp_sep,
+        var_or_iri, var_or_term,
+    },
     parser::{default_or_named_iri, iri, preceded_tag1, sp, sp1},
+    quads::{quads_pattern, Quads},
     query::{Var, VarOrIri},
+    select::{sub_select, SubSelect},
     triple::{property_list, property_list_not_empty, TriplesBlock, Verb},
-    triple::{quads_pattern, Quads},
+    triple::{triples_block, triples_node},
 };
 use nom::character::complete::char;
 use nom::combinator::recognize;

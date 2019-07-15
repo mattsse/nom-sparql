@@ -18,7 +18,7 @@ use crate::{
     group::{group_clause, GroupClause},
     order::{order_condition, OrderCondition},
     parser::{default_or_named_iri, preceded_tag1, sp, sp1},
-    triple::{quads_pattern, Quads},
+    quads::{quads_pattern, Quads},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]

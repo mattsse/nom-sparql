@@ -21,8 +21,8 @@ use crate::operations::{
     DropStatement, LoadStatement, ModifyStatement, MoveStatement,
 };
 use crate::parser::{iri, preceded_tag1, prologue, sp, sp1, sp_enc};
+use crate::quads::{quad_data, Quads};
 use crate::query::Prologue;
-use crate::triple::{quad_data, Quads};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Update {

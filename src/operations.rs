@@ -1,24 +1,26 @@
-use nom::combinator::{map, opt};
-use nom::sequence::{delimited, pair, tuple};
 use nom::{
     branch::alt,
     bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
     character::is_digit,
     combinator::map_res,
+    combinator::{map, opt},
+    multi::separated_list,
+    sequence::{delimited, pair, tuple},
     sequence::{preceded, terminated},
     IResult,
 };
 
-use crate::clauses::{delete_clause, insert_clause, using_clause};
-use crate::expression::{DefaultOrNamedIri, Iri};
-use crate::graph::{
-    graph_or_default, graph_ref, graph_ref_all, group_graph_pattern, GraphOrDefault, GraphRefAll,
-    GroupGraphPattern,
+use crate::{
+    clauses::{delete_clause, insert_clause, using_clause},
+    expression::{DefaultOrNamedIri, Iri},
+    graph::{
+        graph_or_default, graph_ref, graph_ref_all, group_graph_pattern, GraphOrDefault,
+        GraphRefAll, GroupGraphPattern,
+    },
+    literal::silent,
+    parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1},
+    quads::{quad_data, Quads},
 };
-use crate::literal::silent;
-use crate::parser::{iri, preceded_tag1, sp, sp1, sp_enc, sp_enc1};
-use crate::triple::{quad_data, Quads};
-use nom::multi::separated_list;
 
 #[derive(Debug, Clone, Eq, PartialEq, new)]
 pub struct LoadStatement {
