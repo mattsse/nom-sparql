@@ -1,9 +1,9 @@
-use crate::ask::ask_query;
-use crate::construct::construct_query;
 use crate::data::datablock;
-use crate::describe::describe_query;
+use crate::query::ask::ask_query;
+use crate::query::construct::construct_query;
+use crate::query::describe::describe_query;
+use crate::query::select::select_query;
 use crate::query::{SparqlQuery, SparqlQueryStatement};
-use crate::select::select_query;
 use crate::terminals::{preceded_tag1, prologue, sp, sp1};
 use nom::branch::alt;
 use nom::combinator::{map, opt};
@@ -32,23 +32,4 @@ pub fn sparql_query(i: &str) -> IResult<&str, SparqlQuery> {
         map(describe_query, SparqlQuery::Describe),
         map(ask_query, SparqlQuery::Ask),
     ))(i)
-}
-
-pub fn parse_query_bytes<T>(_input: T) -> Result<SparqlQuery, &'static str>
-where
-    T: AsRef<[u8]>,
-{
-    unimplemented!()
-
-    //    match sparql_query(input.as_ref()) {
-    //        Ok((_, o)) => Ok(o),
-    //        Err(_) => Err("failed to parse query"),
-    //    }
-}
-
-pub fn parse_query<T>(input: T) -> Result<SparqlQuery, &'static str>
-where
-    T: AsRef<str>,
-{
-    parse_query_bytes(input.as_ref().trim().as_bytes())
 }

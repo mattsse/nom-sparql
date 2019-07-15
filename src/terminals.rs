@@ -19,17 +19,13 @@ use nom::{
 
 use crate::{
     aggregate::count,
-    ask::ask_query,
     call::arg_list,
     clauses::values_clause,
-    construct::construct_query,
     data::datablock,
-    describe::describe_query,
     expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName},
     graph::graph_term,
     node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
     prologue::{BaseOrPrefixDecl, PrefixDecl, Prologue},
-    select::select_query,
     var::{Var, VarOrIri, VarOrTerm, VerbList},
 };
 

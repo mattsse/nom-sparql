@@ -2,9 +2,14 @@ use std::fmt;
 
 use crate::data::DataBlock;
 use crate::prologue::Prologue;
-use crate::{
+use crate::query::{
     ask::AskQuery, construct::ConstructQuery, describe::DescribeQuery, select::SelectQuery,
 };
+
+pub mod ask;
+pub mod construct;
+pub mod describe;
+pub mod select;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SparqlQueryStatement {

@@ -81,3 +81,11 @@ pub(crate) fn constraint(i: &str) -> IResult<&str, Constraint> {
 pub(crate) fn filter(i: &str) -> IResult<&str, Constraint> {
     preceded_tag1("filter", constraint)(i)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_filter() {}
+}

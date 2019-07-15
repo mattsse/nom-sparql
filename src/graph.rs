@@ -19,7 +19,7 @@ use crate::{
     literal::{boolean, numeric_literal, silent},
     node::{BlankNode, RdfLiteral, TriplesNode},
     quads::{quads_pattern, Quads},
-    select::{sub_select, SubSelect},
+    query::select::{sub_select, SubSelect},
     terminals::sp_sep1,
     terminals::{
         anon, default_or_named_iri, iri, nil, pn_chars_tail, pn_chars_u_one, pn_local,
