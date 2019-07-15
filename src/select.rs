@@ -10,12 +10,11 @@ use crate::clauses::{solution_modifier, values_clause, where_clause, SolutionMod
 use crate::data::{data_set_clause, DataBlock, DataSetClause};
 use crate::expression::{
     expression, expression_as_var, Expression, ExpressionAsVar, Iri, IriOrFunction, PrefixedName,
-    VarOrExpressionAsVar,
 };
 use crate::graph::GroupGraphPattern;
 
 use crate::terminals::{sp, sp1, sp_enc};
-use crate::var::var;
+use crate::var::{var, var_or_expression_as_var, VarOrExpressionAsVar};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SelectQuery {
@@ -103,13 +102,6 @@ pub(crate) fn select_vars(i: &str) -> IResult<&str, SelectVars> {
             many1(var_or_expression_as_var),
             SelectVars::VarOrExpressionAsVar,
         ),
-    ))(i)
-}
-
-pub(crate) fn var_or_expression_as_var(i: &str) -> IResult<&str, VarOrExpressionAsVar> {
-    alt((
-        map(var, VarOrExpressionAsVar::Var),
-        map(expression_as_var, VarOrExpressionAsVar::ExpressionAsVar),
     ))(i)
 }
 

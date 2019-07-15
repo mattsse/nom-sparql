@@ -1,4 +1,4 @@
-use crate::expression::Iri;
+use crate::expression::{expression_as_var, ExpressionAsVar, Iri};
 use crate::graph::{graph_term, GraphTerm};
 use crate::node::ObjectList;
 use crate::terminals::{iri, is_pn_chars_u, sp};
@@ -48,6 +48,12 @@ pub enum Verb {
     A,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum VarOrExpressionAsVar {
+    Var(Var),
+    ExpressionAsVar(ExpressionAsVar),
+}
+
 pub(crate) fn var_or_iri(i: &str) -> IResult<&str, VarOrIri> {
     alt((map(var, VarOrIri::Var), map(iri, VarOrIri::Iri)))(i)
 }
@@ -83,6 +89,13 @@ pub(crate) fn var_or_iris_or_all(i: &str) -> IResult<&str, VarOrIrisOrAll> {
             VarOrIrisOrAll::VarIri,
         ),
         map(char('*'), |_| VarOrIrisOrAll::All),
+    ))(i)
+}
+
+pub(crate) fn var_or_expression_as_var(i: &str) -> IResult<&str, VarOrExpressionAsVar> {
+    alt((
+        map(var, VarOrExpressionAsVar::Var),
+        map(expression_as_var, VarOrExpressionAsVar::ExpressionAsVar),
     ))(i)
 }
 

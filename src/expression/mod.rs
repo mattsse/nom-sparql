@@ -128,12 +128,6 @@ pub struct ExpressionAsVarOpt {
     pub var: Option<Var>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum VarOrExpressionAsVar {
-    Var(Var),
-    ExpressionAsVar(ExpressionAsVar),
-}
-
 pub(crate) fn bracketted_expr3(
     i: &str,
 ) -> IResult<&str, (Expression, Expression, Option<Expression>)> {
@@ -304,4 +298,6 @@ mod test {
         );
     }
 
+    #[test]
+    fn is_expression_as_var() {}
 }
