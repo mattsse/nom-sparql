@@ -29,4 +29,5 @@ pub mod select;
 pub mod triple;
 pub mod update;
 pub mod util;
+pub mod var;
 pub mod write;
