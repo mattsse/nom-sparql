@@ -17,7 +17,7 @@ use crate::graph::graph_node;
 use crate::node::{
     Collection, ObjectList, PropertyList, TriplesNode, TriplesSameSubject, VerbList,
 };
-use crate::parser::{sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term, bracketted};
+use crate::parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term};
 use crate::path::{triples_same_subject_path, TriplesSameSubjectPath};
 use crate::query::VarOrIri;
 
@@ -98,16 +98,12 @@ pub(crate) fn quads_entry(i: &str) -> IResult<&str, QuadsEntry> {
     )(i)
 }
 
-#[inline]
 pub(crate) fn blank_node_property_list(i: &str) -> IResult<&str, PropertyList> {
-    delimited(tag("["), property_list_not_empty, tag("["))(i)
+    delimited(terminated(char('['),sp), property_list_not_empty, preceded(sp, char(']')))(i)
 }
 
 pub(crate) fn collection(i: &str) -> IResult<&str, Collection> {
-    map(
-        bracketted(many1(sp_enc(graph_node))),
-        Collection,
-    )(i)
+    map(bracketted(many1(sp_enc(graph_node))), Collection)(i)
 }
 
 pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
@@ -119,9 +115,14 @@ pub(crate) fn object_list(i: &str) -> IResult<&str, ObjectList> {
 
 pub(crate) fn property_list_not_empty(i: &str) -> IResult<&str, PropertyList> {
     map(
-        separated_nonempty_list(
-            sp_enc(take_while1(|c| c == ';')),
-            map(pair(verb, object_list), |(v, l)| VerbList::new(v, l)),
+        terminated(
+            separated_nonempty_list(
+                sp_enc(many1(sp_enc(char(';')))),
+                map(separated_pair(verb, sp, object_list), |(v, l)| {
+                    VerbList::new(v, l)
+                }),
+            ),
+            many0(preceded(sp, char(';'))),
         ),
         PropertyList,
     )(i)
@@ -205,12 +206,9 @@ mod tests {
         );
     }
 
-    //    #[test]
-    //    fn is_property_list() {
-    //        assert_eq!(
-    //        property_list_not_empty()
-    //        , Ok(("", ))
-    //        );
-    //
-    //    }
+    #[test]
+    fn is_triple_same_subject() {
+
+    }
+
 }
