@@ -18,9 +18,9 @@ use crate::{
     graph::{group_graph_pattern, GroupGraphPattern},
     literal::distinct,
     parser::{
-        iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1, var,
+        iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1,
     },
-    query::Var,
+    var::{var, Var},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]

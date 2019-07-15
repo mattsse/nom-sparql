@@ -14,7 +14,8 @@ use crate::expression::{
 };
 use crate::graph::GroupGraphPattern;
 
-use crate::parser::{sp, sp1, sp_enc, var};
+use crate::parser::{sp, sp1, sp_enc};
+use crate::var::var;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SelectQuery {

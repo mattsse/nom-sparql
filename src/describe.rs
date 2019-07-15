@@ -1,8 +1,8 @@
 use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
 use crate::data::{data_set_clause, DataSetClause};
 use crate::graph::GroupGraphPattern;
-use crate::parser::{sp, sp1, sp_enc, sp_enc1, var_or_iri};
-use crate::query::VarOrIri;
+use crate::parser::{sp, sp1, sp_enc, sp_enc1};
+use crate::var::{var_or_iri, var_or_iris_or_all, VarOrIri, VarOrIrisOrAll};
 use nom::{
     branch::alt,
     bytes::complete::tag_no_case,
@@ -21,12 +21,6 @@ pub struct DescribeQuery {
     pub solution_modifier: SolutionModifier,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum VarOrIrisOrAll {
-    VarIri(Vec<VarOrIri>),
-    All,
-}
-
 pub fn describe_query(i: &str) -> IResult<&str, DescribeQuery> {
     map(
         tuple((
@@ -43,14 +37,4 @@ pub fn describe_query(i: &str) -> IResult<&str, DescribeQuery> {
             solution_modifier,
         },
     )(i)
-}
-
-pub(crate) fn var_or_iris_or_all(i: &str) -> IResult<&str, VarOrIrisOrAll> {
-    alt((
-        map(
-            separated_nonempty_list(sp, var_or_iri),
-            VarOrIrisOrAll::VarIri,
-        ),
-        map(char('*'), |_| VarOrIrisOrAll::All),
-    ))(i)
 }

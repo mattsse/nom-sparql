@@ -14,10 +14,10 @@ use nom::{
 use crate::{
     expression::ArgList,
     graph::graph_node,
-    node::{Collection, ObjectList, PropertyList, TriplesNode, VarOrTerm, VerbList},
-    parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term},
+    node::{Collection, ObjectList, PropertyList, TriplesNode},
+    parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1},
     path::{triples_same_subject_path, TriplesSameSubjectPath},
-    query::VarOrIri,
+    var::{var_or_iri, var_or_term, verb, VarOrIri, VarOrTerm, Verb, VerbList},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -30,12 +30,6 @@ pub enum TriplesSameSubject {
         triples_node: TriplesNode,
         property_list: Option<PropertyList>,
     },
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Verb {
-    VarOrIri(VarOrIri),
-    A,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -88,13 +82,6 @@ pub(crate) fn property_list(i: &str) -> IResult<&str, Option<PropertyList>> {
     opt(property_list_not_empty)(i)
 }
 
-pub(crate) fn verb(i: &str) -> IResult<&str, Verb> {
-    alt((
-        map(var_or_iri, Verb::VarOrIri),
-        map(tag_no_case("a"), |_| Verb::A),
-    ))(i)
-}
-
 pub(crate) fn triples_node(i: &str) -> IResult<&str, TriplesNode> {
     alt((
         map(collection, TriplesNode::Collection),
@@ -140,30 +127,7 @@ mod tests {
     use super::*;
     use crate::expression::Iri;
     use crate::graph::{GraphNode, GraphTerm};
-    use crate::query::Var;
-
-    #[test]
-    fn is_verb() {
-        assert_eq!(verb("a"), Ok(("", Verb::A)));
-
-        assert_eq!(
-            verb("?name"),
-            Ok((
-                "",
-                Verb::VarOrIri(VarOrIri::Var(Var::QMark("name".to_string())))
-            ))
-        );
-
-        assert_eq!(
-            verb("<http://example.org/foaf/aliceFoaf>"),
-            Ok((
-                "",
-                Verb::VarOrIri(VarOrIri::Iri(Iri::Iri(
-                    "http://example.org/foaf/aliceFoaf".to_string()
-                )))
-            ))
-        );
-    }
+    use crate::var::Var;
 
     #[test]
     fn is_triple_same_subject() {

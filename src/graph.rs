@@ -17,18 +17,17 @@ use crate::{
     expression::{Constraint, Iri},
     literal::NumericLiteral,
     literal::{boolean, numeric_literal, silent},
-    node::{BlankNode, RdfLiteral, TriplesNode, VarOrTerm},
+    node::{BlankNode, RdfLiteral, TriplesNode},
     parser::sp_sep1,
     parser::{
         anon, nil, pn_chars_tail, pn_chars_u_one, pn_local, rdf_literal, sp_enc, sp_enc1, sp_sep,
-        var_or_iri, var_or_term,
     },
     parser::{default_or_named_iri, iri, preceded_tag1, sp, sp1},
     quads::{quads_pattern, Quads},
-    query::{Var, VarOrIri},
     select::{sub_select, SubSelect},
-    triple::{property_list, property_list_not_empty, TriplesBlock, Verb},
+    triple::{property_list, property_list_not_empty, TriplesBlock},
     triple::{triples_block, triples_node},
+    var::{var_or_iri, var_or_term, Var, VarOrIri, VarOrTerm, Verb},
 };
 use nom::character::complete::char;
 use nom::combinator::recognize;

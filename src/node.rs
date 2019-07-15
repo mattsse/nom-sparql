@@ -1,23 +1,10 @@
 use crate::expression::Iri;
 use crate::graph::{GraphNode, GraphTerm};
 
-use crate::query::Var;
-use crate::triple::Verb;
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum VarOrTerm {
-    Var(Var),
-    Term(GraphTerm),
-}
+use crate::var::{Var, Verb, VerbList};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ObjectList(pub Vec<GraphNode>);
-
-#[derive(Debug, Clone, Eq, PartialEq, new)]
-pub struct VerbList {
-    pub verb: Verb,
-    pub object_list: ObjectList,
-}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PropertyList(pub Vec<VerbList>);
@@ -72,10 +59,10 @@ mod tests {
     use super::*;
     use crate::graph::blank_node;
     use crate::path::blank_node_property_list_path;
-    use crate::query::VarOrIri;
     use crate::triple::{
         blank_node_property_list, collection, object_list, property_list, property_list_not_empty,
     };
+    use crate::var::{VarOrIri, VarOrTerm};
 
     #[test]
     fn is_blank_node() {

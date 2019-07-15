@@ -26,6 +26,7 @@ pub mod quads;
 pub mod query;
 pub mod read;
 pub mod select;
+pub mod terminals;
 pub mod triple;
 pub mod update;
 pub mod util;

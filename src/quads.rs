@@ -14,11 +14,11 @@ use nom::{
 use crate::{
     expression::ArgList,
     graph::graph_node,
-    node::{Collection, ObjectList, PropertyList, TriplesNode, VarOrTerm, VerbList},
-    parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1, var_or_iri, var_or_term},
+    node::{Collection, ObjectList, PropertyList, TriplesNode},
+    parser::{bracketted, sp, sp_enc, sp_sep, sp_sep1},
     path::{triples_same_subject_path, TriplesSameSubjectPath},
-    query::VarOrIri,
     triple::{triples_template, TriplesTemplate},
+    var::{var_or_iri, var_or_term, VarOrIri, VarOrTerm, VerbList},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, new)]
@@ -86,8 +86,8 @@ mod tests {
     use super::*;
     use crate::expression::{Iri, PrefixedName};
     use crate::graph::{GraphNode, GraphTerm};
-    use crate::query::Var;
-    use crate::triple::{TriplesSameSubject, Verb};
+    use crate::triple::TriplesSameSubject;
+    use crate::var::{Var, Verb};
 
     #[test]
     fn is_quads_not_triples() {

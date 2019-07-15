@@ -1,18 +1,20 @@
-use nom::branch::alt;
-use nom::bytes::complete::{tag, tag_no_case};
-use nom::character::complete::char;
-use nom::combinator::map;
-use nom::multi::{many0, many1, separated_list, separated_nonempty_list};
-use nom::sequence::{delimited, pair, preceded, tuple};
-use nom::IResult;
-
-use crate::expression::{DefaultOrNamedIri, Iri};
-use crate::literal::{boolean, numeric_literal, NumericLiteral};
-use crate::node::RdfLiteral;
-use crate::parser::{
-    bracketted, default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc, var,
+use nom::{
+    branch::alt,
+    bytes::complete::{tag, tag_no_case},
+    character::complete::char,
+    combinator::map,
+    multi::{many0, many1, separated_list, separated_nonempty_list},
+    sequence::{delimited, pair, preceded, tuple},
+    IResult,
 };
-use crate::query::Var;
+
+use crate::{
+    expression::{DefaultOrNamedIri, Iri},
+    literal::{boolean, numeric_literal, NumericLiteral},
+    node::RdfLiteral,
+    parser::{bracketted, default_or_named_iri, iri, nil, preceded_tag1, rdf_literal, sp, sp_enc},
+    var::{var, Var},
+};
 
 /// NAMED GraphClause = NAMED Iri
 pub type DataSetClause = DefaultOrNamedIri;

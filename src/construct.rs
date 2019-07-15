@@ -2,10 +2,10 @@ use crate::{
     clauses::{solution_modifier, where_clause, SolutionModifier},
     data::{data_set_clause, DataSetClause},
     graph::GroupGraphPattern,
-    parser::{preceded_tag1, sp, sp1, sp_enc, sp_enc1, var_or_iri},
-    query::VarOrIri,
+    parser::{preceded_tag1, sp, sp1, sp_enc, sp_enc1},
     triple::TriplesSameSubject,
     triple::{triples_same_subject, triples_template, TriplesTemplate},
+    var::{var_or_iri, VarOrIri},
 };
 use nom::{
     branch::alt,

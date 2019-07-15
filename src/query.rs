@@ -47,37 +47,10 @@ pub enum BaseOrPrefixDecl {
     Prefix(PrefixDecl),
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum VarOrIri {
-    Var(Var),
-    Iri(Iri),
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Var {
-    QMark(String),
-    Dollar(String),
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::{base_decl, prefix_decl, prologue, var, var_or_iri};
-
-    #[test]
-    fn is_var_or_iri() {
-        assert_eq!(
-            var_or_iri("?name"),
-            Ok(("", VarOrIri::Var(Var::QMark("name".to_string()))))
-        );
-    }
-
-    #[test]
-    fn is_var() {
-        assert_eq!(var("?name"), Ok(("", Var::QMark("name".to_string()))));
-
-        assert_eq!(var("$name"), Ok(("", Var::Dollar("name".to_string()))));
-    }
+    use crate::parser::{base_decl, prefix_decl, prologue};
 
     #[test]
     fn is_base() {

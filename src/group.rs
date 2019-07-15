@@ -17,8 +17,8 @@ use crate::expression::{
     ExpressionAsVarOpt, Iri,
 };
 
-use crate::parser::{sp, sp1, var};
-use crate::query::Var;
+use crate::parser::{sp, sp1};
+use crate::var::{var, Var};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct GroupClause(pub Vec<GroupCondition>);

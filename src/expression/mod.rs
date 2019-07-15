@@ -15,10 +15,10 @@ use crate::{
     call::{built_in_call, function_call, BuiltInCall, FunctionCall},
     literal::{boolean, distinct, numeric_literal, NumericLiteral},
     node::RdfLiteral,
-    parser::{bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp1, sp_enc, sp_enc1, var},
-    query::Var,
+    parser::{bracketted, iri_or_fun, nil, preceded_tag1, rdf_literal, sp1, sp_enc, sp_enc1},
 };
 
+use crate::var::{var, Var};
 use std::fmt;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

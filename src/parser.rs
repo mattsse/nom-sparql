@@ -24,14 +24,10 @@ use crate::{
     describe::describe_query,
     expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName},
     graph::graph_term,
-    node::{
-        Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode,
-        VarOrTerm, VerbList,
-    },
-    query::{
-        BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement, Var, VarOrIri,
-    },
+    node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
+    query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement},
     select::select_query,
+    var::{Var, VarOrIri, VarOrTerm, VerbList},
 };
 use nom::character::{is_alphanumeric, is_digit};
 use nom::combinator::recognize;
@@ -234,14 +230,6 @@ pub(crate) fn echar(i: &str) -> IResult<&str, &str> {
     escaped(none_of("\\"), '\\', one_of(r#""tbnrf'"#))(i)
 }
 
-// TODO consider unicode cases in second
-pub(crate) fn var_name(i: &str) -> IResult<&str, &str> {
-    recognize(pair(
-        take_while_m_n(1, 1, |c| is_pn_chars_u(c) || c.is_dec_digit()),
-        take_while(|c| is_pn_chars_u(c) || c.is_dec_digit()),
-    ))(i)
-}
-
 pub(crate) fn prefixed_name(i: &str) -> IResult<&str, PrefixedName> {
     alt((
         map(pname_ln, |(pn_prefix, pn_local)| PrefixedName::PnameLN {
@@ -324,27 +312,6 @@ pub(crate) fn iri_or_fun(i: &str) -> IResult<&str, IriOrFunction> {
         pair(iri, opt(preceded(sp1, arg_list))),
         |(iri, arg_list)| IriOrFunction { iri, arg_list },
     )(i)
-}
-
-pub(crate) fn var_or_iri(i: &str) -> IResult<&str, VarOrIri> {
-    alt((map(var, VarOrIri::Var), map(iri, VarOrIri::Iri)))(i)
-}
-
-pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
-    alt((map(var, VarOrTerm::Var), map(graph_term, VarOrTerm::Term)))(i)
-}
-
-pub(crate) fn var(i: &str) -> IResult<&str, Var> {
-    alt((
-        map(
-            preceded(char('?'), preceded(sp, map(var_name, str::to_string))),
-            Var::QMark,
-        ),
-        map(
-            preceded(char('$'), preceded(sp, map(var_name, str::to_string))),
-            Var::Dollar,
-        ),
-    ))(i)
 }
 
 #[inline]
