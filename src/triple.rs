@@ -175,16 +175,16 @@ pub(crate) fn triples_template(i: &str) -> IResult<&str, TriplesTemplate> {
 pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject> {
     alt((
         map(
-            sp_sep1(var_or_term, property_list_not_empty),
-            |(var_or_term, property_list)| TriplesSameSubject::Term {
-                var_or_term,
+            sp_sep(triples_node, property_list),
+            |(triples_node, property_list)| TriplesSameSubject::Node {
+                triples_node,
                 property_list,
             },
         ),
         map(
-            sp_sep(triples_node, property_list),
-            |(triples_node, property_list)| TriplesSameSubject::Node {
-                triples_node,
+            sp_sep1(var_or_term, property_list_not_empty),
+            |(var_or_term, property_list)| TriplesSameSubject::Term {
+                var_or_term,
                 property_list,
             },
         ),
@@ -195,6 +195,7 @@ pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject>
 mod tests {
     use super::*;
     use crate::expression::Iri;
+    use crate::graph::{GraphNode, GraphTerm};
     use crate::query::Var;
 
     #[test]
@@ -221,6 +222,90 @@ mod tests {
     }
 
     #[test]
-    fn is_triple_same_subject() {}
+    fn is_triple_same_subject() {
+        assert_eq!(
+            triples_same_subject("() a true,()"),
+            Ok((
+                "",
+                TriplesSameSubject::Term {
+                    var_or_term: VarOrTerm::Term(GraphTerm::Nil),
+                    property_list: PropertyList(vec![VerbList::new(
+                        Verb::A,
+                        ObjectList(vec![
+                            GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(true))),
+                            GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                        ]),
+                    )])
+                }
+            ))
+        );
+
+        assert_eq!(
+            triples_same_subject("(()())"),
+            Ok((
+                "",
+                TriplesSameSubject::Node {
+                    triples_node: TriplesNode::Collection(Collection(vec![
+                        GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                        GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil))
+                    ])),
+                    property_list: None
+                }
+            ))
+        );
+
+        assert_eq!(
+            triples_same_subject("[   a (),()\t] a false,()"),
+            Ok((
+                "",
+                TriplesSameSubject::Node {
+                    triples_node: TriplesNode::BlankNodePropertyList(PropertyList(vec![
+                        VerbList::new(
+                            Verb::A,
+                            ObjectList(vec![
+                                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                            ]),
+                        )
+                    ])),
+                    property_list: Some(PropertyList(vec![VerbList::new(
+                        Verb::A,
+                        ObjectList(vec![
+                            GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(false))),
+                            GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                        ]),
+                    )]))
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn is_triples_node() {
+        assert_eq!(
+            triples_node("(true ())"),
+            Ok((
+                "",
+                TriplesNode::Collection(Collection(vec![
+                    GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(true))),
+                    GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil))
+                ]))
+            ))
+        );
+
+        assert_eq!(
+            triples_node("[\na false,() \n]"),
+            Ok((
+                "",
+                TriplesNode::BlankNodePropertyList(PropertyList(vec![VerbList::new(
+                    Verb::A,
+                    ObjectList(vec![
+                        GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(false))),
+                        GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                    ]),
+                )]))
+            ))
+        );
+    }
 
 }
