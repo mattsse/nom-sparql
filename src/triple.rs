@@ -169,7 +169,10 @@ pub(crate) fn triples_block(i: &str) -> IResult<&str, TriplesBlock> {
 }
 
 pub(crate) fn triples_template(i: &str) -> IResult<&str, TriplesTemplate> {
-    separated_nonempty_list(many1(sp_enc(char('.'))), triples_same_subject)(i)
+    terminated(
+        separated_nonempty_list(many1(sp_enc(char('.'))), triples_same_subject),
+        opt(preceded(sp, char('.'))),
+    )(i)
 }
 
 pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject> {
@@ -304,6 +307,54 @@ mod tests {
                         GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
                     ]),
                 )]))
+            ))
+        );
+    }
+
+    #[test]
+    fn is_triples_template() {
+        let nil = TriplesSameSubject::Node {
+            triples_node: TriplesNode::Collection(Collection(vec![
+                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(true))),
+                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+            ])),
+            property_list: None,
+        };
+
+        assert_eq!(triples_template("(true())."), Ok(("", vec![nil.clone()])));
+
+        assert_eq!(
+            triples_template("(true()).(true())"),
+            Ok(("", vec![nil.clone(), nil.clone()]))
+        );
+
+        assert_eq!(
+            triples_template("(true()).[   a (),()\t] a false,()"),
+            Ok((
+                "",
+                vec![
+                    nil.clone(),
+                    TriplesSameSubject::Node {
+                        triples_node: TriplesNode::BlankNodePropertyList(PropertyList(vec![
+                            VerbList::new(
+                                Verb::A,
+                                ObjectList(vec![
+                                    GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                                    GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                                ]),
+                            )
+                        ])),
+                        property_list: Some(PropertyList(vec![VerbList::new(
+                            Verb::A,
+                            ObjectList(vec![
+                                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(
+                                    false
+                                ))),
+                                GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),
+                            ]),
+                        )]))
+                    }
+                ]
             ))
         );
     }
