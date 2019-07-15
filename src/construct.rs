@@ -13,7 +13,7 @@ use nom::{
     character::complete::char,
     combinator::{map, opt},
     multi::many1,
-    multi::{separated_list, separated_nonempty_list},
+    multi::separated_list,
     sequence::{delimited, preceded},
     sequence::{terminated, tuple},
     IResult,

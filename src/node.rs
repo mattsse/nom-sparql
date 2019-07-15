@@ -1,7 +1,7 @@
 use crate::expression::Iri;
-use crate::graph::{GraphNode, GraphTerm};
+use crate::graph::GraphNode;
 
-use crate::var::{Var, Verb, VerbList};
+use crate::var::VerbList;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ObjectList(pub Vec<GraphNode>);
@@ -57,12 +57,12 @@ pub enum TriplesNode {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::graph::blank_node;
+    use crate::graph::{blank_node, GraphTerm};
     use crate::path::blank_node_property_list_path;
     use crate::triple::{
         blank_node_property_list, collection, object_list, property_list, property_list_not_empty,
     };
-    use crate::var::{VarOrIri, VarOrTerm};
+    use crate::var::{Var, VarOrIri, VarOrTerm, Verb};
 
     #[test]
     fn is_blank_node() {

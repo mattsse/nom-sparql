@@ -14,7 +14,6 @@ use nom::{
     AsChar, Err, IResult,
 };
 
-use crate::aggregate::count;
 use crate::terminals::{preceded_tag1, prologue, sp, sp1};
 use crate::{
     ask::ask_query,
@@ -30,9 +29,6 @@ use crate::{
     select::select_query,
     var::{Var, VarOrIri, VarOrTerm, VerbList},
 };
-use nom::character::{is_alphanumeric, is_digit};
-use nom::combinator::recognize;
-use nom::multi::{many0, many1};
 
 pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
     map(
@@ -58,7 +54,7 @@ pub fn sparql_query(i: &str) -> IResult<&str, SparqlQuery> {
     ))(i)
 }
 
-pub fn parse_query_bytes<T>(input: T) -> Result<SparqlQuery, &'static str>
+pub fn parse_query_bytes<T>(_input: T) -> Result<SparqlQuery, &'static str>
 where
     T: AsRef<[u8]>,
 {

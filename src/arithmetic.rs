@@ -2,13 +2,13 @@ use std::{fmt, str::FromStr};
 
 use crate::expression::{expression_list, primary_expression, ExpressionList, PrimaryExpression};
 use crate::literal::{numeric_literal, NumericLiteral};
-use crate::terminals::{preceded_tag, sp, sp1, sp_enc, sp_enc1};
+use crate::terminals::{preceded_tag, sp, sp_enc, sp_enc1};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::bytes::streaming::tag_no_case;
 use nom::combinator::{map, opt};
 use nom::multi::{separated_list, separated_nonempty_list};
-use nom::sequence::{pair, preceded, terminated, tuple};
+use nom::sequence::{pair, preceded, terminated};
 use nom::IResult;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -3,7 +3,7 @@ use nom::{
     bytes::complete::tag_no_case,
     character::complete::char,
     combinator::{map, opt},
-    multi::{separated_listc, separated_nonempty_list},
+    multi::separated_nonempty_list,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
@@ -17,9 +17,7 @@ use crate::{
     },
     graph::{group_graph_pattern, GroupGraphPattern},
     literal::distinct,
-    terminals::{
-        iri, nil, preceded_bracketted, preceded_tag, preceded_tag1, sp, sp1, sp_enc, sp_enc1,
-    },
+    terminals::{iri, nil, preceded_bracketted, preceded_tag1, sp, sp1, sp_enc, sp_enc1},
     var::{var, Var},
 };
 

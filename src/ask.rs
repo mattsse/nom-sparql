@@ -1,7 +1,7 @@
 use crate::clauses::{solution_modifier, where_clause, SolutionModifier};
 use crate::data::{data_set_clause, DataSetClause};
 use crate::graph::GroupGraphPattern;
-use crate::terminals::{sp, sp1, sp_enc};
+use crate::terminals::{sp, sp1};
 use nom::bytes::complete::tag_no_case;
 use nom::combinator::map;
 use nom::multi::separated_list;

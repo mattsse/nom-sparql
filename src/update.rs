@@ -1,28 +1,20 @@
 use nom::{
     branch::alt,
-    bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
     character::complete::char,
-    character::is_digit,
-    combinator::map_res,
     combinator::{map, opt},
+    sequence::preceded,
     sequence::{pair, tuple},
-    sequence::{preceded, terminated},
     IResult,
 };
 
-use crate::expression::Iri;
-use crate::graph::{
-    graph_or_default, graph_ref, graph_ref_all, GraphOrDefault, GraphRefAll, GroupGraphPattern,
-};
-use crate::literal::silent;
 use crate::operations::{
     clear_stmt, copy_stmt, create_stmt, delete_data, delete_where_data, drop_stmt, insert_data,
     load_stmt, modify_stmt, AddStatement, ClearStatement, CopyStatement, CreateStatement,
     DropStatement, LoadStatement, ModifyStatement, MoveStatement,
 };
-use crate::quads::{quad_data, Quads};
+use crate::quads::Quads;
 use crate::query::Prologue;
-use crate::terminals::{iri, preceded_tag1, prologue, sp, sp1, sp_enc};
+use crate::terminals::{prologue, sp, sp_enc};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Update {

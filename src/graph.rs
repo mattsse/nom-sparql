@@ -31,7 +31,7 @@ use crate::{
 };
 use nom::character::complete::char;
 use nom::combinator::recognize;
-use nom::multi::{many0, separated_list, separated_nonempty_list};
+use nom::multi::{separated_list, separated_nonempty_list};
 use nom::sequence::tuple;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

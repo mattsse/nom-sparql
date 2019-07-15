@@ -57,7 +57,7 @@ pub fn sparql_query(i: &str) -> IResult<&str, SparqlQuery> {
     ))(i)
 }
 
-pub fn parse_query_bytes<T>(input: T) -> Result<SparqlQuery, &'static str>
+pub fn parse_query_bytes<T>(_input: T) -> Result<SparqlQuery, &'static str>
 where
     T: AsRef<[u8]>,
 {

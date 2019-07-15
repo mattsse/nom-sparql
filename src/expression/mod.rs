@@ -19,7 +19,6 @@ use crate::{
 };
 
 use crate::var::{var, Var};
-use std::fmt;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Expression(pub Vec<ConditionalAndExpression>);
