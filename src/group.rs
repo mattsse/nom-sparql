@@ -13,8 +13,7 @@ use nom::{
 use crate::call::{built_in_call, function_call, BuiltInCall, FunctionCall};
 
 use crate::expression::{
-    constraint, expression_as_var_opt, Constraint, DefaultOrNamedIri, ExpressionAsVar,
-    ExpressionAsVarOpt, Iri,
+    expression_as_var_opt, DefaultOrNamedIri, ExpressionAsVar, ExpressionAsVarOpt, Iri,
 };
 
 use crate::terminals::{sp, sp1};

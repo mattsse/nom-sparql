@@ -8,12 +8,15 @@ use nom::{
     IResult,
 };
 
+use crate::expression::functions::{
+    regex_expression, str_replace_expression, substring_expression, RegexExpression,
+    StrReplaceExpression, SubstringExpression,
+};
 use crate::{
     aggregate::{aggregate, Aggregate},
     expression::{
-        bracketted_expression, expression, expression_list, regex_expression,
-        str_replace_expression, substring_expression, ArgList, Expression, ExpressionList, Iri,
-        RegexExpression, StrReplaceExpression, SubstringExpression,
+        bracketted_expression, expression, expression_list, ArgList, Expression, ExpressionList,
+        Iri,
     },
     graph::{group_graph_pattern, GroupGraphPattern},
     literal::distinct,

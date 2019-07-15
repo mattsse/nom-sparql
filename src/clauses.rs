@@ -10,9 +10,10 @@ use nom::{
     IResult,
 };
 
+use crate::expression::functions::{constraint, Constraint};
 use crate::{
     data::{datablock, DataBlock},
-    expression::{constraint, Constraint, DefaultOrNamedIri},
+    expression::DefaultOrNamedIri,
     graph::group_graph_pattern,
     graph::GroupGraphPattern,
     group::{group_clause, GroupClause},

@@ -4,7 +4,8 @@ use nom::combinator::map;
 use nom::sequence::separated_pair;
 use nom::IResult;
 
-use crate::expression::{bracketted_expression, constraint, Constraint, Expression};
+use crate::expression::functions::{constraint, Constraint};
+use crate::expression::{bracketted_expression, Expression};
 use crate::terminals::sp1;
 use crate::var::{var, Var};
 

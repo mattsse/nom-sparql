@@ -9,12 +9,12 @@ use nom::{
     IResult,
 };
 
+use crate::expression::functions::{filter, Constraint};
 use crate::{
     data::inline_data,
     data::{datablock, DataBlock},
     expression::DefaultOrNamedIri,
-    expression::{bind, constraint, ExpressionAsVar},
-    expression::{Constraint, Iri},
+    expression::{bind, ExpressionAsVar, Iri},
     literal::NumericLiteral,
     literal::{boolean, numeric_literal, silent},
     node::{BlankNode, RdfLiteral, TriplesNode},
@@ -22,11 +22,10 @@ use crate::{
     select::{sub_select, SubSelect},
     terminals::sp_sep1,
     terminals::{
-        anon, nil, pn_chars_tail, pn_chars_u_one, pn_local, rdf_literal, sp_enc, sp_enc1, sp_sep,
+        anon, default_or_named_iri, iri, nil, pn_chars_tail, pn_chars_u_one, pn_local,
+        preceded_tag1, rdf_literal, sp, sp1, sp_enc, sp_enc1, sp_sep,
     },
-    terminals::{default_or_named_iri, iri, preceded_tag1, sp, sp1},
-    triple::{property_list, property_list_not_empty, TriplesBlock},
-    triple::{triples_block, triples_node},
+    triple::{property_list, property_list_not_empty, triples_block, triples_node, TriplesBlock},
     var::{var_or_iri, var_or_term, Var, VarOrIri, VarOrTerm, Verb},
 };
 use nom::character::complete::char;
@@ -233,10 +232,6 @@ pub(crate) fn service_graph_pattern(i: &str) -> IResult<&str, ServiceGraphPatter
             graph_pattern,
         },
     )(i)
-}
-
-pub(crate) fn filter(i: &str) -> IResult<&str, Constraint> {
-    preceded_tag1("filter", constraint)(i)
 }
 
 pub(crate) fn group_graph_pattern(i: &str) -> IResult<&str, GroupGraphPattern> {
