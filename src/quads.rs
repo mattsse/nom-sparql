@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn is_quads_not_triples() {
-        let nil = TriplesSameSubject::Node {
+        let _nil = TriplesSameSubject::Node {
             triples_node: TriplesNode::Collection(Collection(vec![
                 GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::BooleanLiteral(true))),
                 GraphNode::VarOrTerm(VarOrTerm::Term(GraphTerm::Nil)),

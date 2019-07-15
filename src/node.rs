@@ -58,7 +58,7 @@ pub enum TriplesNode {
 mod tests {
     use super::*;
     use crate::graph::{blank_node, GraphTerm};
-    use crate::path::blank_node_property_list_path;
+
     use crate::triple::{
         blank_node_property_list, collection, object_list, property_list, property_list_not_empty,
     };

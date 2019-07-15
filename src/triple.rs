@@ -125,9 +125,8 @@ pub(crate) fn triples_same_subject(i: &str) -> IResult<&str, TriplesSameSubject>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expression::Iri;
+
     use crate::graph::{GraphNode, GraphTerm};
-    use crate::var::Var;
 
     #[test]
     fn is_triple_same_subject() {

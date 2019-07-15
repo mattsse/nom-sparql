@@ -28,53 +28,10 @@ use crate::{
     expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName},
     graph::graph_term,
     node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
-    query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement},
+    prologue::{BaseOrPrefixDecl, PrefixDecl, Prologue},
     select::select_query,
     var::{Var, VarOrIri, VarOrTerm, VerbList},
 };
-
-pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
-    map(
-        tuple((
-            terminated(prologue, sp),
-            sparql_query,
-            opt(preceded(sp1, preceded_tag1("values", datablock))),
-        )),
-        |(prologue, query, values)| SparqlQueryStatement {
-            prologue,
-            query,
-            values,
-        },
-    )(i)
-}
-
-pub fn sparql_query(i: &str) -> IResult<&str, SparqlQuery> {
-    alt((
-        map(select_query, SparqlQuery::Select),
-        map(construct_query, SparqlQuery::Construct),
-        map(describe_query, SparqlQuery::Describe),
-        map(ask_query, SparqlQuery::Ask),
-    ))(i)
-}
-
-pub fn parse_query_bytes<T>(_input: T) -> Result<SparqlQuery, &'static str>
-where
-    T: AsRef<[u8]>,
-{
-    unimplemented!()
-
-    //    match sparql_query(input.as_ref()) {
-    //        Ok((_, o)) => Ok(o),
-    //        Err(_) => Err("failed to parse query"),
-    //    }
-}
-
-pub fn parse_query<T>(input: T) -> Result<SparqlQuery, &'static str>
-where
-    T: AsRef<str>,
-{
-    parse_query_bytes(input.as_ref().trim().as_bytes())
-}
 
 #[inline]
 pub(crate) fn preceded_bracketted<'a, O1, F>(

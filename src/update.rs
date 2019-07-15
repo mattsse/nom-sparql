@@ -12,8 +12,8 @@ use crate::operations::{
     load_stmt, modify_stmt, AddStatement, ClearStatement, CopyStatement, CreateStatement,
     DropStatement, LoadStatement, ModifyStatement, MoveStatement,
 };
+use crate::prologue::Prologue;
 use crate::quads::Quads;
-use crate::query::Prologue;
 use crate::terminals::{prologue, sp, sp_enc};
 
 #[derive(Debug, Clone, Eq, PartialEq)]

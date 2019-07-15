@@ -1,34 +1,14 @@
-use nom::{
-    branch::alt,
-    bytes::complete::take_while,
-    bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
-    character::complete::{anychar, char, digit1, none_of, one_of},
-    character::{
-        complete::{alpha1, alphanumeric1},
-        is_alphabetic,
-    },
-    combinator::{complete, cond, cut, map, map_res, not, opt, peek},
-    error::ErrorKind,
-    multi::{fold_many0, separated_list},
-    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
-    AsChar, Err, IResult,
-};
-
+use crate::ask::ask_query;
+use crate::construct::construct_query;
+use crate::data::datablock;
+use crate::describe::describe_query;
+use crate::query::{SparqlQuery, SparqlQueryStatement};
+use crate::select::select_query;
 use crate::terminals::{preceded_tag1, prologue, sp, sp1};
-use crate::{
-    ask::ask_query,
-    call::arg_list,
-    clauses::values_clause,
-    construct::construct_query,
-    data::datablock,
-    describe::describe_query,
-    expression::{DefaultOrNamedIri, Iri, IriOrFunction, PrefixedName},
-    graph::graph_term,
-    node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
-    query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement},
-    select::select_query,
-    var::{Var, VarOrIri, VarOrTerm, VerbList},
-};
+use nom::branch::alt;
+use nom::combinator::{map, opt};
+use nom::sequence::{preceded, terminated, tuple};
+use nom::IResult;
 
 pub fn sparql_query_stmt(i: &str) -> IResult<&str, SparqlQueryStatement> {
     map(

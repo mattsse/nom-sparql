@@ -22,6 +22,7 @@ pub mod operations;
 pub mod order;
 pub mod parser;
 pub mod path;
+pub mod prologue;
 pub mod quads;
 pub mod query;
 pub mod read;

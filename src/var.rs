@@ -1,33 +1,16 @@
-use nom::{
-    branch::alt,
-    bytes::complete::take_while,
-    bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n},
-    character::complete::{anychar, char, digit1, none_of, one_of},
-    character::{
-        complete::{alpha1, alphanumeric1},
-        is_alphabetic,
-    },
-    character::{is_alphanumeric, is_digit},
-    combinator::recognize,
-    combinator::{complete, cond, cut, map, map_res, not, opt, peek},
-    error::ErrorKind,
-    multi::{fold_many0, separated_list},
-    multi::{many0, many1, separated_nonempty_list},
-    sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
-    AsChar, Err, IResult,
-};
-
-use crate::{
-    aggregate::count,
-    construct::construct_query,
-    expression::Iri,
-    graph::graph_term,
-    graph::GraphTerm,
-    node::{Collection, ObjectList, PropertyList, RdfLiteral, RdfLiteralDescriptor, TriplesNode},
-    query::{BaseOrPrefixDecl, PrefixDecl, Prologue, SparqlQuery, SparqlQueryStatement},
-    select::select_query,
-    terminals::{iri, is_pn_chars_u, sp},
-};
+use crate::expression::Iri;
+use crate::graph::{graph_term, GraphTerm};
+use crate::node::ObjectList;
+use crate::terminals::{iri, is_pn_chars_u, sp};
+use nom::branch::alt;
+use nom::bytes::complete::take_while;
+use nom::bytes::complete::{escaped, tag, tag_no_case, take_while1, take_while_m_n};
+use nom::character::complete::{anychar, char, digit1, none_of, one_of};
+use nom::combinator::recognize;
+use nom::combinator::{complete, cond, cut, map, map_res, not, opt, peek};
+use nom::multi::separated_nonempty_list;
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
+use nom::{AsChar, IResult};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum VarOrIri {
