@@ -202,7 +202,7 @@ pub(crate) fn prefix_decl(i: &str) -> IResult<&str, PrefixDecl> {
         tuple((
             tag_no_case("prefix"),
             sp_enc(pname_ns),
-            map(iri_ref, str::to_string),
+            map(iri_ref, String::from),
         )),
         |(_, pname_ns, iri_ref)| PrefixDecl { pname_ns, iri_ref },
     )(i)
@@ -317,11 +317,11 @@ pub(crate) fn pn_prefix(i: &str) -> IResult<&str, &str> {
 }
 
 pub(crate) fn pname_ns(i: &str) -> IResult<&str, Option<String>> {
-    terminated(opt(map(pn_prefix, str::to_string)), preceded(sp, char(':')))(i)
+    terminated(opt(map(pn_prefix, String::from)), preceded(sp, char(':')))(i)
 }
 
 pub(crate) fn pname_ln(i: &str) -> IResult<&str, (Option<String>, String)> {
-    pair(pname_ns, preceded(sp, map(pn_local, str::to_string)))(i)
+    pair(pname_ns, preceded(sp, map(pn_local, String::from)))(i)
 }
 
 #[inline]

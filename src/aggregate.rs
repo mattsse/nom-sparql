@@ -116,7 +116,7 @@ pub(crate) fn group_concat(i: &str) -> IResult<&str, GroupConcat> {
                             sp_enc(tag_no_case("separator")),
                             terminated(char('='), sp),
                         )),
-                        map(string_literal, str::to_string),
+                        map(string_literal, String::from),
                     ),
                 )),
             )),

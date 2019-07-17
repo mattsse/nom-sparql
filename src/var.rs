@@ -72,11 +72,11 @@ pub(crate) fn var_or_term(i: &str) -> IResult<&str, VarOrTerm> {
 pub(crate) fn var(i: &str) -> IResult<&str, Var> {
     alt((
         map(
-            preceded(char('?'), preceded(sp, map(var_name, str::to_string))),
+            preceded(char('?'), preceded(sp, map(var_name, String::from))),
             Var::QMark,
         ),
         map(
-            preceded(char('$'), preceded(sp, map(var_name, str::to_string))),
+            preceded(char('$'), preceded(sp, map(var_name, String::from))),
             Var::Dollar,
         ),
     ))(i)
