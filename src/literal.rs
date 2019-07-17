@@ -15,6 +15,16 @@ use nom::{
 };
 
 use crate::arithmetic::Sign;
+use crate::terminals::{language_tag, rdf_literal, string_literal};
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum StringLiteral {
+    Simple(String),
+    /// The literal and the language
+    Language((String, String)),
+    /// A `xsd:string` typed literal
+    Typed(String),
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NumericLiteral {
@@ -24,6 +34,29 @@ pub enum NumericLiteral {
 }
 
 impl Eq for NumericLiteral {}
+
+#[inline]
+pub(crate) fn string_literal_arg(i: &str) -> IResult<&str, StringLiteral> {
+    alt((
+        map(
+            terminated(
+                map(string_literal, String::from),
+                tag_no_case("^^xsd:string"),
+            ),
+            StringLiteral::Simple,
+        ),
+        map(
+            pair(map(string_literal, String::from), opt(language_tag)),
+            |(lit, lang)| {
+                if let Some(lang) = lang {
+                    StringLiteral::Language((lit, lang))
+                } else {
+                    StringLiteral::Simple(lit)
+                }
+            },
+        ),
+    ))(i)
+}
 
 #[inline]
 pub(crate) fn silent(i: &str) -> IResult<&str, bool> {

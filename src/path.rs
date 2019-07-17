@@ -15,6 +15,7 @@ use nom::{
     IResult, Needed,
 };
 
+use crate::expression::iri::{iri_or_a_or_caret, IriOrAOrCaret};
 use crate::expression::Iri;
 use crate::node::ObjectList;
 use crate::terminals::{anon, iri, nil, pn_local, rdf_literal, sp, sp1, sp_enc, sp_sep, sp_sep1};
@@ -119,18 +120,6 @@ pub struct PathNegatedPropertySet(pub Vec<PathOneInPropertySet>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PathOneInPropertySet(pub IriOrAOrCaret);
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum IriOrAOrCaret {
-    IriOrA(IriOrA),
-    /// [`IriOrA`] prefixed with a `^`
-    Caret(IriOrA),
-}
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum IriOrA {
-    Iri(Iri),
-    A,
-}
 
 pub(crate) fn triples_same_subject_path(i: &str) -> IResult<&str, TriplesSameSubjectPath> {
     alt((
@@ -281,17 +270,6 @@ pub(crate) fn path_negated_property_set(i: &str) -> IResult<&str, PathNegatedPro
 
 pub(crate) fn path_one_in_property_set(i: &str) -> IResult<&str, PathOneInPropertySet> {
     map(iri_or_a_or_caret, PathOneInPropertySet)(i)
-}
-
-pub(crate) fn iri_or_a(i: &str) -> IResult<&str, IriOrA> {
-    alt((map(iri, IriOrA::Iri), map(tag_no_case("a"), |_| IriOrA::A)))(i)
-}
-
-pub(crate) fn iri_or_a_or_caret(i: &str) -> IResult<&str, IriOrAOrCaret> {
-    alt((
-        map(iri_or_a, IriOrAOrCaret::IriOrA),
-        map(preceded(char('^'), iri_or_a), IriOrAOrCaret::Caret),
-    ))(i)
 }
 
 pub(crate) fn path_mod(i: &str) -> IResult<&str, PathMod> {
