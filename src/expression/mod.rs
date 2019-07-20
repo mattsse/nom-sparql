@@ -105,14 +105,21 @@ pub struct ExpressionAsVarOpt {
     pub var: Option<Var>,
 }
 
+pub(crate) fn bracketted3<'a, O1, F>(i: &'a str, pat: F) -> IResult<&str, (O1, O1, Option<O1>)>
+where
+    F: Fn(&'a str) -> IResult<&'a str, O1>,
+{
+    bracketted(tuple((
+        &pat,
+        preceded(sp_enc(char(',')), &pat),
+        opt(preceded(sp_enc(char(',')), &pat)),
+    )))(i)
+}
+
 pub(crate) fn bracketted_expr3(
     i: &str,
 ) -> IResult<&str, (Expression, Expression, Option<Expression>)> {
-    bracketted(tuple((
-        expression,
-        preceded(sp_enc(char(',')), expression),
-        opt(preceded(sp_enc(char(',')), expression)),
-    )))(i)
+    bracketted3(i, expression)
 }
 
 pub(crate) fn expression_as_var_opt(i: &str) -> IResult<&str, ExpressionAsVarOpt> {

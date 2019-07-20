@@ -17,13 +17,48 @@ use nom::{
 use crate::arithmetic::Sign;
 use crate::terminals::{language_tag, rdf_literal, string_literal};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum StringLiteral {
+    /// A quoted only string
     Simple(String),
     /// The literal and the language
     Language((String, String)),
     /// A `xsd:string` typed literal
     Typed(String),
+}
+
+impl StringLiteral {
+    /// Compatibility of two arguments is defined as:
+    ///
+    /// The arguments are simple literals or literals typed as xsd:string
+    /// The arguments are plain literals with identical language tags
+    /// The first argument is a plain literal with language tag
+    /// and the second argument is a simple literal or literal typed as xsd:string
+    pub fn compatible_arg(&self, arg2: &Self) -> bool {
+        match self {
+            StringLiteral::Simple(_) => {
+                if let StringLiteral::Language(_) = arg2 {
+                    true
+                } else {
+                    false
+                }
+            }
+            StringLiteral::Language((_, lang)) => {
+                if let StringLiteral::Language((_, arg2_lang)) = arg2 {
+                    lang == arg2_lang
+                } else {
+                    true
+                }
+            }
+            StringLiteral::Typed(_) => {
+                if let StringLiteral::Language(_) = arg2 {
+                    false
+                } else {
+                    true
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -195,6 +230,14 @@ mod tests {
         } else {
             panic!("double literal mistaken for int {:?}", expected.1)
         }
+    }
+
+    #[test]
+    fn is_string_literal_arg() {
+        assert_eq!(
+            string_literal_arg(r#""A""#),
+            Ok(("", StringLiteral::Simple("A".to_string())))
+        );
     }
 
 }

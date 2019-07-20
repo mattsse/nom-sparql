@@ -45,6 +45,7 @@ pub enum TriplesSameSubjectPath {
     },
 }
 
+/// Property paths allow traversing the graph using regex-like patterns of predicates.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PropertyListPath {
     pub verb_path_or_simple: VerbPathOrSimple,

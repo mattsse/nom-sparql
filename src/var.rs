@@ -45,6 +45,7 @@ pub enum VarOrIrisOrAll {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Verb {
     VarOrIri(VarOrIri),
+    /// syntactic shortcut for rdf:type
     A,
 }
 

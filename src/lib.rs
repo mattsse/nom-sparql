@@ -5,6 +5,7 @@
 #[macro_use]
 extern crate derive_new;
 
+/// https://www.obitko.com/tutorials/ontologies-semantic-web/rdf-query-language-sparql.html
 pub mod aggregate;
 pub mod arithmetic;
 pub mod call;
@@ -28,3 +29,5 @@ pub mod triple;
 pub mod update;
 pub mod var;
 pub mod write;
+
+pub mod mimes {}
