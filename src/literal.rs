@@ -81,7 +81,10 @@ pub(crate) fn string_literal_arg(i: &str) -> IResult<&str, StringLiteral> {
             StringLiteral::Simple,
         ),
         map(
-            pair(map(string_literal, String::from), opt(language_tag)),
+            pair(
+                map(string_literal, String::from),
+                opt(map(language_tag, String::from)),
+            ),
             |(lit, lang)| {
                 if let Some(lang) = lang {
                     StringLiteral::Language((lit, lang))

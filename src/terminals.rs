@@ -80,6 +80,13 @@ pub(crate) fn sp1(i: &str) -> IResult<&str, &str> {
     take_while1(is_sp)(i)
 }
 
+pub(crate) fn new_line(i: &str) -> IResult<&str, Option<&str>> {
+    terminated(
+        opt(preceded(char('#'), recognize(many0(none_of("\n"))))),
+        char('\n'),
+    )(i)
+}
+
 #[inline]
 pub(crate) fn sp_enc<'a, O1, F>(pat: F) -> impl Fn(&'a str) -> IResult<&'a str, O1>
 where
@@ -145,7 +152,10 @@ pub(crate) fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
         pair(
             map(string_literal, String::from),
             opt(alt((
-                map(language_tag, RdfLiteralDescriptor::LangTag),
+                map(
+                    map(language_tag, String::from),
+                    RdfLiteralDescriptor::LangTag,
+                ),
                 map(preceded(tag("^^"), iri), RdfLiteralDescriptor::IriRef),
             ))),
         ),
@@ -157,24 +167,10 @@ pub(crate) fn rdf_literal(i: &str) -> IResult<&str, RdfLiteral> {
 }
 
 // TODO refactor
-pub(crate) fn language_tag(i: &str) -> IResult<&str, String> {
-    map(
-        preceded(
-            char('@'),
-            pair(
-                alpha1,
-                fold_many0(
-                    pair(tag("-"), alphanumeric1),
-                    String::new(),
-                    |mut s, item| {
-                        s += item.0;
-                        s += item.1;
-                        s
-                    },
-                ),
-            ),
-        ),
-        |(s1, s2)| format!("{}{}", s1, s2),
+pub(crate) fn language_tag(i: &str) -> IResult<&str, &str> {
+    preceded(
+        char('@'),
+        recognize(pair(alpha1, many0(pair(tag("-"), alphanumeric1)))),
     )(i)
 }
 
@@ -457,14 +453,6 @@ mod tests {
                 Iri::Iri("http://education.data.gov.uk/def/school/".to_string())
             ))
         );
-
-        //        assert_eq!(
-        //            iri("<http://education.data.gov.uk/def/school/>"),
-        //            Ok((
-        //                "",
-        //                Iri::PrefixedName("http://education.data.gov.uk/def/school/".to_string())
-        //            ))
-        //        );
     }
 
     #[test]
@@ -485,14 +473,11 @@ mod tests {
 
     #[test]
     fn is_lang_tag() {
-        assert_eq!(language_tag("@en"), Ok(("", "en".to_string())));
-        assert_eq!(
-            language_tag("@some-lang-tag1"),
-            Ok(("", "some-lang-tag1".to_string()))
-        );
+        assert_eq!(language_tag("@en"), Ok(("", "en")));
+        assert_eq!(language_tag("@some-lang-tag1"), Ok(("", "some-lang-tag1")));
         assert_eq!(
             language_tag("@some-123lang-tag1"),
-            Ok(("", "some-123lang-tag1".to_string()))
+            Ok(("", "some-123lang-tag1"))
         );
         assert_eq!(
             language_tag("@1lang"),
