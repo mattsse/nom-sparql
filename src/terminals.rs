@@ -72,19 +72,19 @@ where
 
 #[inline]
 pub(crate) fn sp(i: &str) -> IResult<&str, &str> {
-    take_while(is_sp)(i)
+    recognize(many0(alt((recognize(one_of(" \t")), new_line))))(i)
 }
 
 #[inline]
 pub(crate) fn sp1(i: &str) -> IResult<&str, &str> {
-    take_while1(is_sp)(i)
+    recognize(many1(alt((recognize(one_of(" \t")), new_line))))(i)
 }
 
-pub(crate) fn new_line(i: &str) -> IResult<&str, Option<&str>> {
-    terminated(
-        opt(preceded(char('#'), recognize(many0(none_of("\n"))))),
-        char('\n'),
-    )(i)
+pub(crate) fn new_line(i: &str) -> IResult<&str, &str> {
+    recognize(pair(
+        opt(preceded(char('#'), many0(none_of("\n\r")))),
+        one_of("\r\n"),
+    ))(i)
 }
 
 #[inline]
